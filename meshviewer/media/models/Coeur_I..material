@@ -1,0 +1,14 @@
+material 07-Default
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.0862745 0.0862745 1
+			diffuse 0.588235 0.0862745 0.0862745 1
+			specular 0 0 0 1 52
+		}
+
+	}
+
+}

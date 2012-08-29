@@ -1,0 +1,158 @@
+Ce document est un journal permettant de prendre des notes au cours du dévloppement et de garder une trace des informations importantes et des choix effectués. Il s'agit d'un document brut destiné à être transformé en une documentation mieux organisée.
+
+
+Choix du moteur 3D
+==================
+
+Critères : 
+- Capable d'afficher des modèles skinnés
+- Import facile du format de fichier choisi
+- Open source et linux compatible
+
+Irlicht, Panda3d, Ogre3D
+
+
+Irrlicht
+--------
++ Paquets debian dans les repositories officiels
++ Bon tutoriaux
++ Beaucoup de features
++ Charge les Collada
+
+- ne sait pas animer les Collada
+
+Panda3D
+------
++ Moteur de jeu complet (audio, IA, plein de shaders)
++ porté par une grosse boite et une université (Disney et CMU)
++ Charge les Collada, en théorie, mais il faut une dépendence difficile à obtenir (FCollada)
++ Charge les .x
+
+- pas dans les repositories classiques : besoin d'etre compilé
+- dépendence à FCollada qui n'est plus open source et difficile à obtenir
+
+Ogre3D
+------
+
+Utilise son propre format : .mesh
+
+Exporteur pour 3DSMax :
+http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Easy+Ogre+Exporter
+ou
+http://www.ogre3d.org/tikiwiki/tiki-index.php?page=OgreMax+Scene+Exporter
+
++ Communauté très active
++ Beaucoup de fonctionnalités
+
+- utilise son propre format
+
+Choix du format de fichier
+==========================
+
+Contraintes : 
+  - exportable par 3dsmax
+  - utilisable dans un moteur temps réel
+  - capable d'exprimer des features complexes (skins, matériaux)
+  - format ouvert (donc pas FBX, possédé par Autodesk)
+  
+
+Candidats : Collada, b3d, ms3d, .x
+
+Exclus : FBX (propriétaire)
+		 3DS (pas d'animation)
+		 .irr (format de irrlicht, mais sans animation et peu d'exporteurs)
+
+	Collada
+	-------
+	Très ouvert (même organisme que OpenGL) et supporte énormément de features. Peut être à cause de ça, il est très mal supporté par beaucoup de librairies. Il est en particulier difficile de trouver un support de son skinning et de ses animations.
+
+	B3D
+	---
+	Le site de Irrlicht le décrit comme le meilleur format binaire pour les meshes animés. Il y a l'air d'y avoir des fans dans l'équipe. Par contre ça semble difficile de faire des exports depuis 3DS. Il y a des plugins blender, mais je ne sais pas ce qu'ils valent. La spec est disponible (en v0.01 mais ça a l'air d'être la seule) et placée dans le domaine public. Probablement moins d'effets que dans Collada.
+
+	Milkshape 3D (.ms3d)
+	--------------------
+	Probablement ouvert, bien qu'issu d'un soft propriétaire. Ses specs jusqu'à la version 1.8.2 sont connues.
+
+	Microsoft DirectX (.x)
+	----------------------
+	Pas exactement des chantres de l'open source, et à la licence pas claire. Cette firme a l'habitude de changer ses specs sans trop le dire. J'aimerais éviter ce format, mais Irrlicht l'accepte et panda3d sait convertir des .x en .egg
+
+	Ogre3D
+	------
+	Totalement ouvert, supporte les animations et pas mal d'effets, utilisable uniquement avec Ogre3D. Normallement les exporteurs à partir de 3DSMax existent et fonctionnent
+
+
+
+Installation Kinect sur le PC Erasme
+------------------------------------
+
+J'ai gloabalement suivi les instructions de ce site : 
+http://www.20papercups.net/programming/kinect-on-ubuntu-with-openni/
+Avec quelques petits ajouts (dépendances manquantes) et une version différente du git de SensorKinect
+:
+    su
+    apt-get install git build-essential python libusb-1.0-0-dev freeglut3-dev doxygen graphviz libmono-winforms1.0-cil winforms2.0-cil openjdk-6-jdk
+
+    git clone https://github.com/OpenNI/OpenNI.git
+
+
+    cd OpenNI/Platform/Linux/CreateRedist
+    chmod +x RedistMaker
+    ./RedistMaker
+    cd ../Redist/OpenNI-Bin-Dev-Linux-[xxx]  (where [xxx] is your architecture and this particular OpenNI release)
+    ./install.sh
+
+    git clone https://github.com/avin2/SensorKinect
+    cd SensorKinect
+    git checkout faf4994fceba82e6fbd3dad16f79e4399be0c184
+
+    cd Platform/Linux/CreateRedist
+    chmod +x RedistMaker
+    sudo ./RedistMaker
+    cd ../Redist/Sensor-Bin-Linux-[xxx] (where [xxx] is your architecture and this particular OpenNI release)
+    sudo chmod +x install.sh
+    sudo ./install.sh
+
+Dépendances Renderer
+--------------------
+
+Le renderer utilise une version compilée depuis les sources de la librairie Ogre3D. C'est la version 1.8.0 qui est utilisée.
+Elle vient avec un grand nombre de dépendances, voici une liste de celles qui m'ont manqué lors de l'install initiale. Cette liste n'est certainement pas exhaustive  :
+lobois-dev libxmu-dev libzzip-dev libfreetype6-dev
+
+L'installation de Ogre3D doit être faite dans le répertoire par défaut : /usr/local
+
+Utilisation de CMake
+--------------------
+
+CMake est utilisé pour la génération des Makefiles. Trois raisons à cela :
+
+- Facilité à créer plus tard une version Windows ou MacOSX
+- Bonne intégration de CMake avec Ogre3D
+- Possibilité d'utiliser une IDE riche (QtCreator) avec CMake
+
+Afin de compiler le projet, se placer dans un repertoire créé pour l'occasion, par exemple à l'interieur du répertoire racine du projet : 
+
+	mkdir build
+	build/
+
+lancer la création du makefile et l'executer:
+
+	cmake ..
+	make
+	make install
+
+Le résultat de la compilation est stocké dans bin/ à la racine du projet
+
+Utilisation de l'executable et fichiers .cfg
+--------------------------------------------
+
+L'étape 'make install' copie des fichiers de configuration depuis cfg/ vers bin/
+Si ces fichiers doivent être modifiés, il faut les modifier dans cfg/ puis réexecuter "make install" depuis le répertoire build/
+
+
+Note sur les textures et la modelisation
+----------------------------------------
+
+Pas d'espace dans les noms de fichiers : Ogre a du mal avec ça. Spécialement avec les fichiers textures
