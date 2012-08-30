@@ -59,7 +59,7 @@ bool BaseApplication::configure(void)
     {
         // If returned true, user clicked OK so initialise
         // Here we choose to let the system create a default rendering window by passing 'true'
-        mWindow = mRoot->initialise(true, "Mirroir Museolab - Mesh Viewer");
+        mWindow = mRoot->initialise(true, "Miroir Museolab - Mesh Viewer");
 
         return true;
     }
