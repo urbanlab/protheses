@@ -16,7 +16,7 @@
 #*/
 cmake_minimum_required(VERSION 2.6)
  
-project(OgreApp)
+project(meshhviewer)
  
 if(WIN32)
 	set(CMAKE_MODULE_PATH "$ENV{OGRE_HOME}/CMake/;${CMAKE_MODULE_PATH}")
@@ -109,19 +109,19 @@ include_directories( ${OIS_INCLUDE_DIRS}
 	${OGRE_SAMPLES_INCLUDEPATH}
 )
  
-add_executable(OgreApp WIN32 ${HDRS} ${SRCS})
+add_executable(meshviewer WIN32 ${HDRS} ${SRCS})
  
-set_target_properties(OgreApp PROPERTIES DEBUG_POSTFIX _d)
+set_target_properties(meshviewer PROPERTIES DEBUG_POSTFIX _d)
  
-target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+target_link_libraries(meshviewer ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
  
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
  
 # post-build copy for win32
 if(WIN32 AND NOT MINGW)
-	add_custom_command( TARGET OgreApp PRE_BUILD
+	add_custom_command( TARGET meshviewer PRE_BUILD
 		COMMAND if not exist .\\..\\bin mkdir .\\..\\bin )
-	add_custom_command( TARGET OgreApp POST_BUILD
+	add_custom_command( TARGET meshviewer POST_BUILD
 		COMMAND copy \"$(TargetPath)\" .\\..\\bin )
 endif(WIN32 AND NOT MINGW)
 
@@ -131,7 +131,7 @@ endif(MINGW OR UNIX)
  
 if(WIN32)
  
-	install(TARGETS OgreApp
+	install(TARGETS meshviewer
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
  
@@ -187,7 +187,7 @@ endif(WIN32)
 
 if(UNIX)
  
-	install(TARGETS OgreApp
+	install(TARGETS meshviewer
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
  

@@ -15,16 +15,25 @@ public:
 protected:
     virtual void createScene(void);
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+    virtual bool updateBone(std::string boneName,
+                            XnUserID userId,
+                            XnSkeletonJoint jointName);
 
 private:
     Ogre::Entity * mModel;
     Ogre::SceneNode * mRootNode;
     Ogre::SceneNode * mModelNode;
+    Ogre::AnimationState *mAnimationState;
     std::string mMeshFilename;
 
-    XnUserID aUsers[15];
+    Ogre::SceneNode * mKinectNode[10];
+
+    XnUserID mCurrentUserXn;
     XnUInt16 nUsers;
-    XnSkeletonJointTransformation torsoJoint;
+
+
+    Ogre::Entity * mDebugEnt[10];
+    Ogre::SceneNode * mDebugNode[10];
 
 };
 
