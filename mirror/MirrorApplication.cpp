@@ -116,7 +116,7 @@ void MirrorApplication::createScene()
     mModelNode = mRootNode->createChildSceneNode("ModelNode");
     mModelNode->attachObject(mModel);
     mModelNode->setScale(SCALE, SCALE, SCALE);
-    mModel->setDisplaySkeleton(true);
+    mModel->setDisplaySkeleton(false);
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
     mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.2,0.2,0.2w));
@@ -127,9 +127,9 @@ void MirrorApplication::createScene()
 
     Ogre::Light* light = mSceneMgr->createLight("MainLight");
     light->setPosition(20.0f, 80.0f, 1050.0f);
-    mCamera->setPosition(0,200,800);
-    //mCamera->lookAt(0,200,1400);
-//    /mCamera->setPosition(0,200,0);
+    //mCamera->setPosition(0,200,1400);
+    mCamera->lookAt(0,200,1400);
+    mCamera->setPosition(0,200,0);
 
     bool visible = true;
     mKinectNode[0] = mRootNode->createChildSceneNode("K1");
@@ -145,7 +145,10 @@ void MirrorApplication::createScene()
         mKinectNode[3]->attachObject(mSceneMgr->createEntity("Knot4", "knot.mesh"));
     }
     for(int i=0;i<4;i++)
+    {
         mKinectNode[i]->setScale(0.1,0.1,0.1);
+        mKinectNode[i]->setPosition(70*i,0,0);
+    }
 
     mDebugEnt[0] = mSceneMgr->createEntity("DebugEnt0", "knot.mesh");
     mDebugNode[0] = mRootNode->createChildSceneNode("DebugNode0");
@@ -162,6 +165,13 @@ void MirrorApplication::createScene()
     mDebugNode[1]->setScale(1,1,1);
     mDebugNode[1]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
+    mDebugEnt[2] = mSceneMgr->createEntity("DebugEnt2", "knot.mesh");
+    mDebugNode[2] = mModelNode->createChildSceneNode("DebugNode2");
+    mDebugNode[2]->attachObject(mDebugEnt[2]);
+    mDebugNode[2]->setPosition(0,0,0);
+    mDebugNode[2]->setScale(1,1,1);
+    mDebugNode[2]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+
 }
 
 bool MirrorApplication::updateBone(std::string boneName,
@@ -175,11 +185,12 @@ bool MirrorApplication::updateBone(std::string boneName,
 
         Ogre::Bone* bone = mModel->getSkeleton()->getBone(jointName);
         bone->setManuallyControlled(true);
-        bone->setInheritOrientation(false);
+        //bone->setInheritOrientation(false);
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(userId,jointName,joint);
 
         Ogre::Quaternion quat(joint.orientation.orientation.elements);
+        bone->resetToInitialState();
         //bone->resetOrientation();
         //quat = bone->convertWorldToLocalOrientation(quat);
         //bone->setOrientation(quat * bone->getInitialOrientation());
@@ -190,18 +201,8 @@ bool MirrorApplication::updateBone(std::string boneName,
                           joint.position.position.Z);
 
 
-        //bone->setPosition(bone->_getFullTransform().inverse()*v);
-        bone->resetToInitialState();
-        cout << bone->convertLocalToWorldPosition(bone->getPosition()) << endl;
-        cout << v << endl;
-        cout << bone->convertWorldToLocalPosition(v) << endl << endl;
-
         v=bone->convertWorldToLocalPosition(v);
         bone->translate(v);
-        cout << bone->convertLocalToWorldPosition(bone->getPosition()) << endl;
-        cout << Ogre::Vector3(joint.position.position.X,
-                                  joint.position.position.Y,
-                                  joint.position.position.Z) << endl;
 
     }
     catch( Ogre::Exception& e )
@@ -239,10 +240,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }*/
 
 
-
-
     g_Context.WaitOneUpdateAll(g_UserGenerator);
-
     // We suppose a max of 15 memorized users
     nUsers=15;
     XnUserID aUsers[15];
@@ -261,20 +259,31 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
+    static float dT=0.0;
+    dT+=0.01;
     Ogre::Vector3 v;
-    v = Ogre::Vector3(500, 0, 0);
+    v = Ogre::Vector3(500,500*cos(dT),0);
     Ogre::Bone* bone = mModel->getSkeleton()->getBone("epaule_");
+    Ogre::Bone* bone_epaule, *bone_abras, *bone_bras;
+    Matrix4 transf;
+    mModelNode->setPosition(0,0,-500);
+
+    transf = mModelNode->_getFullTransform();
+
+    bone_epaule = bone;
     bone->setManuallyControlled(true);
     bone->setInheritOrientation(false);
     bone->setInheritScale(false);
 
     //bone->setPosition(bone->_getFullTransform().inverse()*v);
     cout << "**********************" << endl;
-    //mModelNode->setPosition(0,0,0);
+
+
+
     bone->resetToInitialState();
-    //bone->setPosition(0,0,0);
-    //bone->setOrientation(1,0,0,0);
     bone->setScale(1000,1000,1000);
+    bone->setPosition(500,500*cos(dT),0);
+    //bone->setOrientation(1,0,0,0);
 
 
 
@@ -282,45 +291,59 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     cout << v << endl;
     cout << bone->convertWorldToLocalPosition(v) << endl << endl;
 
-    bone->setPosition(mModelNode->_getDerivedOrientation().Inverse()*
-                      (v - mModelNode->_getDerivedPosition()));
-    v=bone->convertWorldToLocalPosition(v);
-    bone->translate(v);
-    cout << bone->convertLocalToWorldPosition(bone->getPosition()) << endl;
-    cout << bone->getPosition() << endl;
+    bone->setPosition(transf.inverse() * v);
+    /*bone->setPosition(mModelNode->_getDerivedOrientation().Inverse()*
+                      (v - mModelNode->_getDerivedPosition()));*/
+    cout << transf.inverse() * v << endl;
+    cout << mModelNode->_getDerivedOrientation().Inverse()*
+            (v - mModelNode->_getDerivedPosition())<< endl << endl;
+
     cout << v << endl;
+    cout << (mModelNode->_getFullTransform()*
+             bone->_getFullTransform())*Vector4(0,0,0,1) << endl;
 
 
 
+    transf = transf * bone->_getFullTransform();
     v = Vector3(0, -400, 0);
     bone = mModel->getSkeleton()->getBone("bras_");
+    bone_bras = bone;
     bone->setManuallyControlled(true);
     //bone->setInheritOrientation(false);
-    //bone->setInheritScale(false);
+    bone->setPosition(transf.inverse() * v);
 
-    //bone->setPosition(bone->_getFullTransform().inverse()*v);
-    //mModelNode->setPosition(0,0,0);
-    bone->resetToInitialState();
-    //bone->setPosition(0,0,0);
-    //bone->setOrientation(1,0,0,0);
-    //bone->setScale(1000,1000,1000);
-
-
-    cout << bone->convertLocalToWorldPosition(bone->getPosition()) << endl;
     cout << v << endl;
-    cout << bone->convertWorldToLocalPosition(v) << endl << endl;
+    cout << (mModelNode->_getFullTransform()*
+             bone->getParent()->_getFullTransform()*
+             bone->_getFullTransform())*Vector4(0,0,0,1) << endl;
 
-    bone->setPosition(mModelNode->_getDerivedOrientation().Inverse()*
-                      (v - mModelNode->_getDerivedPosition()));
-    v=bone->convertWorldToLocalPosition(v);
-    bone->translate(v);
-    cout << bone->convertLocalToWorldPosition(bone->getPosition()) << endl;
-    cout << bone->getPosition() << endl;
+
+    transf = transf * bone->_getFullTransform();
+    v = Vector3(-400, 0, 0);
+    bone = mModel->getSkeleton()->getBone("avant_bras_");
+    bone_abras = bone;
+    bone->setManuallyControlled(true);
+    //bone->setInheritOrientation(false);
+    bone->setPosition(transf.inverse() * v);
     cout << v << endl;
+    cout << (mModelNode->_getFullTransform()*
+             bone->getParent()->_getFullTransform()*
+             bone->getParent()->getParent()->_getFullTransform()*
+             bone->_getFullTransform())*Vector4(0,0,0,1) << endl;
 
 
-    //g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i],XN_SKEL_LEFT_ELBOW,elbowLeftJoint);
-    if(found)
+
+    /*SceneNode *n1 = mRootNode->createChildSceneNode();
+    SceneNode *n2 = mRootNode->createChildSceneNode();
+
+    n1->setPosition(bone_epaule->getPosition());
+    n2->setPosition(bone_bras->getPosition());
+    n1->lookAt(n2->getPosition(), Node::TS_LOCAL);
+    bone_epaule->setOrientation(n1->getOrientation());*/
+
+
+
+  if(found)
     {
 
 
@@ -334,7 +357,9 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         v = Ogre::Vector3(joint.position.position.X,
                           joint.position.position.Y,
                           joint.position.position.Z);
-        mModelNode->setPosition(v);
+        mModelNode->resetToInitialState();
+        v=mModelNode->convertWorldToLocalPosition(v);
+        mModelNode->translate(v);
 
         /*updateBone("epaule_", aUsers[mCurrentUserXn], XN_SKEL_LEFT_SHOULDER);
         updateBone("avant_bras_", aUsers[mCurrentUserXn], XN_SKEL_LEFT_ELBOW);
