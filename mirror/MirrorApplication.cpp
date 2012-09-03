@@ -127,9 +127,9 @@ void MirrorApplication::createScene()
 
     Ogre::Light* light = mSceneMgr->createLight("MainLight");
     light->setPosition(20.0f, 80.0f, 1050.0f);
-    mCamera->setPosition(0,200,1400);
-    //mCamera->lookAt(0,200,1400);
-    //mCamera->setPosition(0,200,0);
+    //mCamera->setPosition(0,200,1400);
+    mCamera->lookAt(0,-200,1400);
+    mCamera->setPosition(0,-200,0);
 
     bool visible = true;
     mKinectNode[0] = mRootNode->createChildSceneNode("K1");
@@ -227,25 +227,47 @@ bool MirrorApplication::updateBone(std::string boneName,
 
 void MirrorApplication::updateKinectCloud()
 {
+    const XnRGB24Pixel* videoImage = mKinectVideo.RGB24Data();
+    // actually an uint16*
+    const XnDepthPixel* videoDepth = mKinectDepth.Data();
     const int numpoints = 640*480;
     static float pointlist[numpoints*3];
     static float colorarray[numpoints*3];
     int vindex=0;
     int cindex=0;
+    int kindex=0;
     static float dT = 0.0;
     dT+=0.04;
+
+/*
+    int pointwalker=0;
+    for (XnUInt y = 0; y < g_imageMD.YRes(); ++y){
+
+    for (XnUInt x = 0; x < g_imageMD.XRes(); ++x){
+
+    imRGB[y][x].red = pImageRow[y*g_imageMD.XRes() +x].nRed;
+    imRGB[y][x].green = pImageRow[y*g_imageMD.XRes() +x].nGreen;
+    imRGB[y][x].blue = pImageRow[y*g_imageMD.XRes() +x].nBlue;
+    }
+    }*/
+
+    int colcount=0;
     for(int j=0;j<480;j++)
     {
         for(int i=0;i<640;i++)
         {
+            int col=0;
             pointlist[vindex++]=i;
-            pointlist[vindex++]=j;
-            pointlist[vindex++]=cos(i/50.0+dT)*30.0;
-            colorarray[cindex++]=i%256;
-            colorarray[cindex++]=0.5;
-            colorarray[cindex++]=j%256;
+            pointlist[vindex++]=-j;
+            pointlist[vindex++]=videoDepth[kindex];
+            colorarray[cindex++]=(videoImage[kindex].nBlue)/256.0;
+            colorarray[cindex++]=(videoImage[kindex].nGreen)/256.0;
+            colorarray[cindex++]=(videoImage[kindex].nRed)/256.0;
+            kindex++;
+            if(col>0) colcount++;
         }
     }
+    cout << "Col count : " << colcount << endl;
     mPointCloud->updateVertexColours(640*480, colorarray);
     mPointCloud->updateVertexPositions(640*480, pointlist);
 }
@@ -284,8 +306,16 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }*/
 
 
-#if 0
-    g_Context.WaitOneUpdateAll(g_UserGenerator);
+#if 1
+    //g_Context.WaitOneUpdateAll(g_UserGenerator);
+    g_Context.WaitAndUpdateAll();
+    xn::ImageGenerator imgene;
+    g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
+    imgene.GetMetaData(mKinectVideo);
+
+    xn::DepthGenerator dgene;
+    g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, dgene);
+    dgene.GetMetaData(mKinectDepth);
 #endif
 
     // We suppose a max of 15 memorized users
@@ -465,6 +495,16 @@ int main(int argc, char *argv[])
 
     nRetVal = g_Context.StartGeneratingAll();
     CHECK_RC(nRetVal, "StartGenerating");
+
+    xn::ImageGenerator imgene;
+    nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
+    CHECK_RC(nRetVal, "Init Video input");
+    imgene.GetMetaData(app.mKinectVideo);
+
+    xn::DepthGenerator dgene;
+    nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, dgene);
+    CHECK_RC(nRetVal, "Init Depth video input");
+    dgene.GetMetaData(app.mKinectDepth);
 
 
     printf("Starting to run\n");

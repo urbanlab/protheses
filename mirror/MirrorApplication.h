@@ -13,6 +13,11 @@ class MirrorApplication : public BaseApplication
 public:
     void setMeshFilename(std::string filename) {mMeshFilename=filename;}
 
+    // Should private and grouped with all the dirty globals in main
+    xn::ImageMetaData mKinectVideo;
+    xn::DepthMetaData mKinectDepth;
+
+
 protected:
     virtual void createScene(void);
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
@@ -20,6 +25,9 @@ protected:
                             XnUserID userId,
                             XnSkeletonJoint jointName);
     void updateKinectCloud();
+
+
+
 
 private:
     Ogre::Entity * mModel;
@@ -37,6 +45,7 @@ private:
     PointCloud * mPointCloud;
     Ogre::Entity * mDebugEnt[10];
     Ogre::SceneNode * mDebugNode[10];
+
 
 };
 
