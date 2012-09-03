@@ -61,6 +61,7 @@ PointCloud::PointCloud(const std::string& name,
    sub->operationType = Ogre::RenderOperation::OT_POINT_LIST;
 
    mMeshPtr->_setBounds(Ogre::AxisAlignedBox(-10e10,-10e10,-10e10,10e10,10e10,10e10));
+   //mMeshPtr->_setBounds(Ogre::AxisAlignedBox(0,0,0,640,480,1024));
    mMeshPtr->_setBoundingSphereRadius(10e10);
 
    mMeshPtr->load();

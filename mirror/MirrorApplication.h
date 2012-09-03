@@ -5,6 +5,7 @@
 #define __MirrorApplication_h_
 
 #include <XnCppWrapper.h>
+#include <XnTypes.h>
 #include "pointcloud.h"
 #include "BaseApplication.h"
 
@@ -16,6 +17,7 @@ public:
     // Should private and grouped with all the dirty globals in main
     xn::ImageMetaData mKinectVideo;
     xn::DepthMetaData mKinectDepth;
+    xn::DepthGenerator mDepthGenerator;
 
 
 protected:
@@ -45,6 +47,7 @@ private:
     PointCloud * mPointCloud;
     Ogre::Entity * mDebugEnt[10];
     Ogre::SceneNode * mDebugNode[10];
+
 
 
 };

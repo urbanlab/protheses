@@ -153,20 +153,20 @@ void MirrorApplication::createScene()
     mDebugEnt[0] = mSceneMgr->createEntity("DebugEnt0", "knot.mesh");
     mDebugNode[0] = mRootNode->createChildSceneNode("DebugNode0");
     mDebugNode[0]->attachObject(mDebugEnt[0]);
-    mDebugNode[0]->setPosition(500,-100,0);
-    mDebugNode[0]->setScale(1,1,1);
+    mDebugNode[0]->setPosition(640,-480,1024);
+    mDebugNode[0]->setScale(0.2,0.2,0.2);
     mDebugNode[0]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
 
     mDebugEnt[1] = mSceneMgr->createEntity("DebugEnt1", "knot.mesh");
     mDebugNode[1] = mRootNode->createChildSceneNode("DebugNode1");
     mDebugNode[1]->attachObject(mDebugEnt[1]);
-    mDebugNode[1]->setPosition(0,-400,0);
-    mDebugNode[1]->setScale(1,1,1);
+    mDebugNode[1]->setPosition(0,0,1024);
+    mDebugNode[1]->setScale(0.2,0.2,0.2);
     mDebugNode[1]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
     mDebugEnt[2] = mSceneMgr->createEntity("DebugEnt2", "knot.mesh");
-    mDebugNode[2] = mModelNode->createChildSceneNode("DebugNode2");
+    mDebugNode[2] = mRootNode->createChildSceneNode("DebugNode2");
     mDebugNode[2]->attachObject(mDebugEnt[2]);
     mDebugNode[2]->setPosition(0,0,0);
     mDebugNode[2]->setScale(1,1,1);
@@ -180,6 +180,7 @@ void MirrorApplication::createScene()
 
     mPointCloudEnt = mSceneMgr->createEntity("KinectCloudEnt", "KinectCloud");
     mPointCloudEnt->setMaterialName("Pointcloud");
+
     mRootNode->attachObject(mPointCloudEnt);
 
     mModelNode->setVisible(false);
@@ -267,14 +268,12 @@ void MirrorApplication::updateKinectCloud()
             if(col>0) colcount++;
         }
     }
-    cout << "Col count : " << colcount << endl;
     mPointCloud->updateVertexColours(640*480, colorarray);
     mPointCloud->updateVertexPositions(640*480, pointlist);
 }
 
 bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-    mModelNode->setPosition(0,0,0);
     Bone* bone;
     mModelNode->setPosition(0,0,0);
     bone = mModel->getSkeleton()->getBone("epaule_");
@@ -313,9 +312,9 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
     imgene.GetMetaData(mKinectVideo);
 
-    xn::DepthGenerator dgene;
-    g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, dgene);
-    dgene.GetMetaData(mKinectDepth);
+
+    g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, mDepthGenerator);
+    mDepthGenerator.GetMetaData(mKinectDepth);
 #endif
 
     // We suppose a max of 15 memorized users
@@ -332,7 +331,6 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         {
             mCurrentUserXn=i;
             found=true;
-            cout << "found ("<<mCurrentUserXn<<") " << endl;
         }
     }
 
@@ -351,6 +349,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         XnSkeletonJointTransformation joint;
         Vector3 v;
+        XnPoint3D xnv;
         Bone* bone_epaule, *bone_abras, *bone_bras;
         Quaternion quat;
         Matrix4 transf;
@@ -371,6 +370,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone->resetToInitialState();
         bone->setScale(1000,1000,1000);
         //bone->setPosition(transf.inverse() * v);
+        //cout << bone->getName() << "=" << v << endl;
         quat = Quaternion(joint.orientation.orientation.elements);
         bone->setOrientation(quat);
 
@@ -387,6 +387,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone->setManuallyControlled(true);
         bone->setInheritOrientation(false);
         //bone->setPosition(transf.inverse() * v);
+        //cout << bone->getName() << "=" << v << endl;
         quat = Quaternion(joint.orientation.orientation.elements);
         bone->setOrientation(quat);
         mDebugNode[0]->setOrientation(quat);
@@ -402,6 +403,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone_abras = bone;
         bone->setManuallyControlled(true);
         bone->setInheritOrientation(false);
+        //cout << bone->getName() << "=" << v << endl;
         //bone->setPosition(transf.inverse() * v);
         quat = Quaternion(joint.orientation.orientation.elements);
         bone->setOrientation(quat);
@@ -409,24 +411,29 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_SHOULDER,joint);
-        v = Ogre::Vector3(joint.position.position.X,
-                          joint.position.position.Y,
-                          joint.position.position.Z);
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[1]->setPosition(v);
+        cout << "shoulder=" << v << endl;
+
 
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_ELBOW,joint);
-        v = Ogre::Vector3(joint.position.position.X,
-                          joint.position.position.Y,
-                          joint.position.position.Z);
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[2]->setPosition(v);
+        cout << "elbow=" << v << endl;
+
 
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_HAND,joint);
-        v = Ogre::Vector3(joint.position.position.X,
-                          joint.position.position.Y,
-                          joint.position.position.Z);
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[3]->setPosition(v);
+        cout << "hand=" << v << endl;
     }
 
 
@@ -501,10 +508,9 @@ int main(int argc, char *argv[])
     CHECK_RC(nRetVal, "Init Video input");
     imgene.GetMetaData(app.mKinectVideo);
 
-    xn::DepthGenerator dgene;
-    nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, dgene);
+    nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, app.mDepthGenerator);
     CHECK_RC(nRetVal, "Init Depth video input");
-    dgene.GetMetaData(app.mKinectDepth);
+    app.mDepthGenerator.GetMetaData(app.mKinectDepth);
 
 
     printf("Starting to run\n");
