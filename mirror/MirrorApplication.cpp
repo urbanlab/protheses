@@ -183,7 +183,7 @@ void MirrorApplication::createScene()
 
     mRootNode->attachObject(mPointCloudEnt);
 
-    mModelNode->setVisible(false);
+    //mModelNode->setVisible(false);
 }
 
 bool MirrorApplication::updateBone(std::string boneName,
@@ -306,14 +306,14 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
 
 #if 1
-    //g_Context.WaitOneUpdateAll(g_UserGenerator);
-    g_Context.WaitAndUpdateAll();
+    g_Context.WaitOneUpdateAll(g_UserGenerator);
+    //g_Context.WaitAndUpdateAll();
     xn::ImageGenerator imgene;
     g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
     imgene.GetMetaData(mKinectVideo);
 
 
-    g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, mDepthGenerator);
+    //g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, mDepthGenerator);
     mDepthGenerator.GetMetaData(mKinectDepth);
 #endif
 
@@ -359,54 +359,54 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_SHOULDER,joint);
-        v = Ogre::Vector3(joint.position.position.X,
-                          joint.position.position.Y,
-                          joint.position.position.Z);
-        bone = mModel->getSkeleton()->getBone("bras_");
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
+        bone = mModel->getSkeleton()->getBone("epaule_");
         bone_epaule = bone;
         bone->setManuallyControlled(true);
         bone->setInheritOrientation(false);
         bone->setInheritScale(false);
         bone->resetToInitialState();
-        bone->setScale(1000,1000,1000);
-        //bone->setPosition(transf.inverse() * v);
+        bone->setScale(500,500,500);
+        bone->setPosition(transf.inverse() * v);
         //cout << bone->getName() << "=" << v << endl;
-        quat = Quaternion(joint.orientation.orientation.elements);
-        bone->setOrientation(quat);
+        //quat = Quaternion(joint.orientation.orientation.elements);
+        //bone->setOrientation(quat);
 
 
 
-        transf = transf * bone->_getFullTransform();
+        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_ELBOW,joint);
-        v = Ogre::Vector3(joint.position.position.X,
-                          joint.position.position.Y,
-                          joint.position.position.Z);
-        bone = mModel->getSkeleton()->getBone("avant_bras_");
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
+        bone = mModel->getSkeleton()->getBone("bras_");
         bone_bras = bone;
         bone->setManuallyControlled(true);
         bone->setInheritOrientation(false);
-        //bone->setPosition(transf.inverse() * v);
+        bone->setPosition(transf.inverse() * v);
         //cout << bone->getName() << "=" << v << endl;
-        quat = Quaternion(joint.orientation.orientation.elements);
-        bone->setOrientation(quat);
+        //quat = Quaternion(joint.orientation.orientation.elements);
+        //bone->setOrientation(quat);
         mDebugNode[0]->setOrientation(quat);
 
 
         transf = mModelNode->_getFullTransform() * bone->_getFullTransform();
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_HAND,joint);
-        v = Ogre::Vector3(joint.position.position.X,
-                          joint.position.position.Y,
-                          joint.position.position.Z);
-        bone = mModel->getSkeleton()->getBone("poignet_");
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
+        bone = mModel->getSkeleton()->getBone("avant_bras_");
         bone_abras = bone;
         bone->setManuallyControlled(true);
         bone->setInheritOrientation(false);
         //cout << bone->getName() << "=" << v << endl;
-        //bone->setPosition(transf.inverse() * v);
-        quat = Quaternion(joint.orientation.orientation.elements);
-        bone->setOrientation(quat);
+        bone->setPosition(transf.inverse() * v);
+        //quat = Quaternion(joint.orientation.orientation.elements);
+        //bone->setOrientation(quat);
 
 
         g_UserGenerator.GetSkeletonCap().
