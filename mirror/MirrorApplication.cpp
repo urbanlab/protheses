@@ -351,8 +351,10 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         Vector3 v;
         XnPoint3D xnv;
         Bone* bone_epaule, *bone_abras, *bone_bras;
-        Quaternion quat;
+        Quaternion quat, qI;
         Matrix4 transf;
+        Matrix3 matOri;
+        float * matE;
         mModelNode->setPosition(0,0,0);
 
         transf = mModelNode->_getFullTransform();
@@ -371,8 +373,15 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone->setScale(500,500,500);
         bone->setPosition(transf.inverse() * v);
         //cout << bone->getName() << "=" << v << endl;
-        //quat = Quaternion(joint.orientation.orientation.elements);
-        //bone->setOrientation(quat);
+        qI = bone->getInitialOrientation();
+        matE = joint.orientation.orientation.elements;
+        matOri = Matrix3(  matE[0],-matE[1], matE[2],
+                          -matE[3], matE[4],-matE[5],
+                           matE[6],-matE[7], matE[8]);
+        quat.FromRotationMatrix(matOri);
+        bone->resetOrientation();
+        quat = bone->convertWorldToLocalOrientation(quat);
+        bone->setOrientation(quat*qI);
 
 
 
@@ -388,8 +397,15 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone->setInheritOrientation(false);
         bone->setPosition(transf.inverse() * v);
         //cout << bone->getName() << "=" << v << endl;
-        //quat = Quaternion(joint.orientation.orientation.elements);
-        //bone->setOrientation(quat);
+        qI = bone->getInitialOrientation();
+        matE = joint.orientation.orientation.elements;
+        matOri = Matrix3(  matE[0],-matE[1], matE[2],
+                          -matE[3], matE[4],-matE[5],
+                           matE[6],-matE[7], matE[8]);
+        quat.FromRotationMatrix(matOri);
+        bone->resetOrientation();
+        quat = bone->convertWorldToLocalOrientation(quat);
+        bone->setOrientation(quat*qI);
         mDebugNode[0]->setOrientation(quat);
 
 
@@ -405,8 +421,15 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone->setInheritOrientation(false);
         //cout << bone->getName() << "=" << v << endl;
         bone->setPosition(transf.inverse() * v);
-        //quat = Quaternion(joint.orientation.orientation.elements);
-        //bone->setOrientation(quat);
+        qI = bone->getInitialOrientation();
+        matE = joint.orientation.orientation.elements;
+        matOri = Matrix3(  matE[0],-matE[1], matE[2],
+                          -matE[3], matE[4],-matE[5],
+                           matE[6],-matE[7], matE[8]);
+        quat.FromRotationMatrix(matOri);
+        bone->resetOrientation();
+        quat = bone->convertWorldToLocalOrientation(quat);
+        bone->setOrientation(quat*qI);
 
 
         g_UserGenerator.GetSkeletonCap().
