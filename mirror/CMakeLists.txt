@@ -154,11 +154,13 @@ endif()
 set(HDRS
 	./BaseApplication.h
 	./MirrorApplication.h
+        ./pointcloud.h
 )
  
 set(SRCS
 	./BaseApplication.cpp
 	./MirrorApplication.cpp
+        ./pointcloud.cpp
 )
  
 include_directories( ${OIS_INCLUDE_DIRS}

@@ -25,23 +25,22 @@ PointCloud::PointCloud(const std::string& name,
    mVertBuf->writeData(0, mVertBuf->getSizeInBytes(), parray, true);
 
    if(carray != NULL)
-
    {
       // Create 2nd buffer for colors
-
       decl->addElement(1, 0, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
       mColBuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                   Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR),
                   mMeshPtr->sharedVertexData->vertexCount,
                   Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-
       Ogre::RenderSystem* rs = Ogre::Root::getSingleton().getRenderSystem();
       Ogre::RGBA *colours = new Ogre::RGBA[numpoints];
       for(int i=0, k=0; i<numpoints*3, k<numpoints; i+=3, k++)
       {
          // Use render system to convert colour value since colour packing varies
-         rs->convertColourValue(Ogre::ColourValue(carray[i],carray[i+1],carray[i+2]), &colours[k]);
+         rs->convertColourValue(Ogre::ColourValue(0*carray[i]+(i%100)/100.0,
+                                                  0*carray[i+1]+((i/640)%100)/100.0,
+                                                  0*carray[i+2]+(i%768)/100.0), &colours[k]);
       }
       // Upload colour data
       mColBuf->writeData(0, mColBuf->getSizeInBytes(), colours, true);
@@ -52,7 +51,6 @@ PointCloud::PointCloud(const std::string& name,
    Ogre::VertexBufferBinding* bind = mMeshPtr->sharedVertexData->vertexBufferBinding;
    bind->setBinding(0, mVertBuf);
 
-
    if(carray != NULL)
    {
       // Set colour binding so buffer 1 is bound to colour buffer
@@ -60,10 +58,12 @@ PointCloud::PointCloud(const std::string& name,
    }
 
    sub->useSharedVertices = true;
-   sub->operationType = Ogre::RenderOperation::OT_LINE_STRIP;
+   sub->operationType = Ogre::RenderOperation::OT_POINT_LIST;
+
+   mMeshPtr->_setBounds(Ogre::AxisAlignedBox(-10e10,-10e10,-10e10,10e10,10e10,10e10));
+   mMeshPtr->_setBoundingSphereRadius(10e10);
 
    mMeshPtr->load();
-   sub->_getRenderOperation(rend);
 }
 
 
@@ -79,25 +79,23 @@ void PointCloud::updateVertexPositions(int size, float *points)
       pPArray[i+2] = points[i+2];
    }
    mVertBuf->unlock();
-
-   mMeshPtr->_setBoundingSphereRadius(10000);
-   /*mMeshPtr->_setBounds(Ogre::AxisAlignedBox(-10e10, -10e10, -10e10,
-                                         10e10,  10e10,  10e10));*/
-
 }
 
 
 
 void PointCloud::updateVertexColours(int size, float *colours)
 {
-   float *pCArray = static_cast<float*>(mColBuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-
-   for(int i=0; i<size*3; i+=3)
+   Ogre::RGBA *pCArray = static_cast<Ogre::RGBA*>(
+               mColBuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+   Ogre::RenderSystem* rs = Ogre::Root::getSingleton().getRenderSystem();
+   int ind=0;
+   for(int i=0; i<size; i++)
    {
-      pCArray[i] = colours[i];
-      pCArray[i+1] = colours[i+1];
-      pCArray[i+2] = colours[i+2];
+      rs->convertColourValue(Ogre::ColourValue(colours[ind++],
+                                               colours[ind++],
+                                               colours[ind++]), &pCArray[i]);
    }
+
    mColBuf->unlock();
 }
 

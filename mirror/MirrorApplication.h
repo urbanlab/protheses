@@ -5,6 +5,7 @@
 #define __MirrorApplication_h_
 
 #include <XnCppWrapper.h>
+#include "pointcloud.h"
 #include "BaseApplication.h"
 
 class MirrorApplication : public BaseApplication
@@ -18,6 +19,7 @@ protected:
     virtual bool updateBone(std::string boneName,
                             XnUserID userId,
                             XnSkeletonJoint jointName);
+    void updateKinectCloud();
 
 private:
     Ogre::Entity * mModel;
@@ -31,7 +33,8 @@ private:
     XnUserID mCurrentUserXn;
     XnUInt16 nUsers;
 
-
+    Ogre::Entity * mPointCloudEnt;
+    PointCloud * mPointCloud;
     Ogre::Entity * mDebugEnt[10];
     Ogre::SceneNode * mDebugNode[10];
 
