@@ -121,7 +121,10 @@ Le renderer utilise une version compilée depuis les sources de la librairie Ogr
 Elle vient avec un grand nombre de dépendances, voici une liste de celles qui m'ont manqué lors de l'install initiale. Cette liste n'est certainement pas exhaustive  :
 lobois-dev libxmu-dev libzzip-dev libfreetype6-dev
 
-L'installation de Ogre3D doit être faite dans le répertoire par défaut : /usr/local
+L'installation de Ogre3D doit être faite dans le répertoire par défaut : /usr/local. Cette installation se fait en utilisant la procédure cmake classique :
+cmake .
+make
+sudo make install
 
 Utilisation de CMake
 --------------------
