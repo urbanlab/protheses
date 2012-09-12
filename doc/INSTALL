@@ -1,0 +1,62 @@
+L'application mirror nécessite deux grosses dépendances qui doivent être installées depuis leurs sources respectives : OpenNI (qui permet de bénéficier du trakcing de squelette de la kienct) et Ogre3D (qui permet l'affichage d'un modelle squelettisé). Ce document décrit la procédure d'installation de ces deux dépendances.
+
+Installation Kinect sur le PC Erasme
+------------------------------------
+
+J'ai gloabalement suivi les instructions de ce site :
+http://www.20papercups.net/programming/kinect-on-ubuntu-with-openni/
+Avec quelques petits ajouts (dépendances manquantes) et une version différente du git de SensorKinect
+:
+    su
+    apt-get install git build-essential python libusb-1.0-0-dev freeglut3-dev doxygen graphviz libmono-winforms1.0-cil winforms2.0-cil openjdk-6-jdk
+
+    git clone https://github.com/OpenNI/OpenNI.git
+
+
+    cd OpenNI/Platform/Linux/CreateRedist
+    chmod +x RedistMaker
+    ./RedistMaker
+    cd ../Redist/OpenNI-Bin-Dev-Linux-[xxx] (where [xxx] is your architecture and this particular OpenNI release)
+    ./install.sh
+
+    git clone https://github.com/avin2/SensorKinect
+    cd SensorKinect
+    git checkout faf4994fceba82e6fbd3dad16f79e4399be0c184
+
+    cd Platform/Linux/CreateRedist
+    chmod +x RedistMaker
+    sudo ./RedistMaker
+    cd ../Redist/Sensor-Bin-Linux-[xxx] (where [xxx] is your architecture and this particular OpenNI release)
+    sudo chmod +x install.sh
+    sudo ./install.sh
+
+Dépendances Renderer
+--------------------
+
+Le renderer utilise une version compilée depuis les sources de la librairie Ogre3D. C'est la version 1.8.0 qui est utilisée.
+Elle vient avec un grand nombre de dépendances, voici une liste de celles qui m'ont manqué lors de l'install initiale. Cette liste n'est certainement pas exhaustive :
+lobois-dev libxmu-dev libzzip-dev libfreetype6-dev
+
+L'installation de Ogre3D doit être faite dans le répertoire par défaut : /usr/local
+
+Utilisation de CMake
+--------------------
+
+CMake est utilisé pour la génération des Makefiles. Trois raisons à cela :
+
+- Facilité à créer plus tard une version Windows ou MacOSX
+- Bonne intégration de CMake avec Ogre3D
+- Possibilité d'utiliser une IDE riche (QtCreator) avec CMake
+
+Afin de compiler le projet, se placer dans un repertoire créé pour l'occasion, par exemple à l'interieur du répertoire racine du projet :
+
+mkdir build
+build/
+
+lancer la création du makefile et l'executer:
+
+cmake ..
+make
+make install
+
+Le résultat de la compilation est stocké dans bin/ à la racine du projet
