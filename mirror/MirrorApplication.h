@@ -55,6 +55,7 @@ private:
     Ogre::Entity * mDebugEnt[10];
     Ogre::SceneNode * mDebugNode[10];
 
+    double mDebugYaw, mDebugPitch, mDebugRoll;
 
 
 };

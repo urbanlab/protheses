@@ -298,6 +298,9 @@ void MirrorApplication::updateKinectCloud()
 bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     Bone* bone;
+    static float dT=0.0;
+    dT = dT + 0.01;
+
     mModelNode->setPosition(0,0,0);
     bone = mModel->getSkeleton()->getBone("epaule_");
     bone->setManuallyControlled(true);
@@ -375,7 +378,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         transf = mModelNode->_getFullTransform();
 
         g_UserGenerator.GetSkeletonCap().
-                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_SHOULDER,joint);
+                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_NECK,joint);
         mDepthGenerator.ConvertRealWorldToProjective
                 (1,&(joint.position.position), &xnv);
         v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
@@ -386,8 +389,43 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bone->setInheritOrientation(false);
         bone->setInheritScale(false);
         bone->resetToInitialState();
+        if(joint.orientation.fConfidence>0.5f)
+        {
+            qI = Quaternion::IDENTITY; //bone->getInitialOrientation();
+            matE = joint.orientation.orientation.elements;
+            matOri = Matrix3(  matE[0], matE[1], matE[2],
+                               matE[3], matE[4], matE[5],
+                               matE[6], matE[7], matE[8]);
+            quat.FromRotationMatrix(matOri);
+            bone->resetOrientation();
+            quat = bone->convertWorldToLocalOrientation(quat);
+            bone->setOrientation(quat*qI);
+            bone->yaw(Radian(Degree(90))+Radian(mDebugYaw));
+            bone->pitch(Radian(Degree(-34))+Radian(mDebugPitch));
+            bone->roll(Radian(Degree(-90))+Radian(mDebugRoll));
+            cout << mDebugYaw<<" , "<<mDebugPitch<<" , "<<mDebugRoll<<endl;
+        }
+        //quat.FromAxes();
+        //bone->pitch(Radian(Degree(180)));
+        //bone->yaw(Radian(Degree(180)));
+
+
         bone->setScale(500,500,500);
         bone->setPosition(transf.inverse() * v);
+        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
+
+        g_UserGenerator.GetSkeletonCap().
+                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_SHOULDER,joint);
+        mDepthGenerator.ConvertRealWorldToProjective
+                (1,&(joint.position.position), &xnv);
+        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
+
+        bone = mModel->getSkeleton()->getBone("bras_");
+        bone_bras = bone;
+
+        bone->setManuallyControlled(true);
+        bone->setInheritOrientation(true);
+        bone->resetToInitialState();
         if(joint.orientation.fConfidence>0.5f)
         {
             qI = Quaternion::IDENTITY; //bone->getInitialOrientation();
@@ -400,16 +438,8 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
             quat = bone->convertWorldToLocalOrientation(quat);
             bone->setOrientation(quat*qI);
         }
-        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
-
-        bone = mModel->getSkeleton()->getBone("bras_");
-        bone_bras = bone;
-        //bone->setManuallyControlled(true);
-        //bone->setInheritOrientation(false);
-        //bone->setPosition(transf.inverse() * v);
-        //cout << bone->getName() << "=" << v << endl;
-
-
+        //bone->setPosition(0,0,0);
+        //cout << "Init position bras_ : "<< bone->getPosition()<< endl;
 
         transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
         g_UserGenerator.GetSkeletonCap().
@@ -490,8 +520,6 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(mSelectedBone)
         {
-            static float dT=0.0;
-            dT = dT + 0.01;
             mSelectedBone->setManuallyControlled(true);
             mSelectedBone->setInheritOrientation(false);
             Quaternion quat;
@@ -546,6 +574,30 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_NUMPAD5)
     {
         mSelectedBone = mModel->getSkeleton()->getBone("main_");
+    }
+    else if (arg.key == OIS::KC_I)
+    {
+        mDebugYaw += 0.1;
+    }
+    else if (arg.key == OIS::KC_K)
+    {
+        mDebugYaw -= 0.1;
+    }
+    else if (arg.key == OIS::KC_O)
+    {
+        mDebugPitch += 0.1;
+    }
+    else if (arg.key == OIS::KC_L)
+    {
+        mDebugPitch -= 0.1;
+    }
+    else if (arg.key == OIS::KC_P)
+    {
+        mDebugRoll += 0.1;
+    }
+    else if (arg.key == OIS::KC_M)
+    {
+        mDebugRoll -= 0.1;
     }
     return BaseApplication::keyPressed(arg);
 }
