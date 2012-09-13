@@ -54,13 +54,13 @@ CMake est utilisé pour la génération des Makefiles. Trois raisons à cela :
 
 Afin de compiler le projet, se placer dans un repertoire créé pour l'occasion, par exemple à l'interieur du répertoire racine du projet :
 
-mkdir build
-build/
+	mkdir build
+	cd build/
 
 lancer la création du makefile et l'executer:
 
-cmake ..
-make
-make install
+	cmake ..
+	make
+	make install
 
 Le résultat de la compilation est stocké dans bin/ à la racine du projet
