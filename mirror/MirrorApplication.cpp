@@ -401,7 +401,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
             quat = bone->convertWorldToLocalOrientation(quat);
             bone->setOrientation(quat*qI);
             bone->yaw(Radian(Degree(90))+Radian(mDebugYaw));
-            bone->pitch(Radian(Degree(-34))+Radian(mDebugPitch));
+            bone->pitch(Radian(Degree(-51))+Radian(mDebugPitch));
             bone->roll(Radian(Degree(-90))+Radian(mDebugRoll));
             cout << mDebugYaw<<" , "<<mDebugPitch<<" , "<<mDebugRoll<<endl;
         }
