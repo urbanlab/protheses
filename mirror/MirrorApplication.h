@@ -6,6 +6,9 @@
 
 #include <XnCppWrapper.h>
 #include <XnTypes.h>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
 #include "pointcloud.h"
 #include "BaseApplication.h"
 
@@ -15,11 +18,15 @@ public:
     MirrorApplication();
     void setMeshFilename(std::string filename) {mMeshFilename=filename;}
 
-    // Should private and grouped with all the dirty globals in main
+    // Should be private and grouped with all the dirty globals in main
     xn::ImageMetaData mKinectVideo;
     xn::DepthMetaData mKinectDepth;
     xn::DepthGenerator mDepthGenerator;
 
+    bool mThreadRunning;
+    bool mThreadQuit;
+    boost::thread * mThread;
+    boost::mutex m_Mutex;
 
 protected:
     virtual void createScene(void);
@@ -29,7 +36,9 @@ protected:
                             XnSkeletonJoint jointName);
     virtual bool keyPressed( const OIS::KeyEvent &arg );
     virtual void createFrameListener(void);
+    virtual void destroyScene(void);
     void updateKinectCloud();
+    void kinectThread();
 
 
 

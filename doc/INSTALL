@@ -30,10 +30,14 @@ Avec quelques petits ajouts (dépendances manquantes) et une version différente
     sudo chmod +x install.sh
     sudo ./install.sh
 
+La verions de OpenNI testée a l'ID SHA: 3d355acc8e31ec16253336ae9acea769ec088e04
+
 Dépendances Renderer
 --------------------
 
-Le renderer utilise une version compilée depuis les sources de la librairie Ogre3D. C'est la version 1.8.0 qui est utilisée.
+Le renderer utilise une version compilée depuis les sources de la librairie Ogre3D. C'est la version 1.8.0 qui est utilisée, récupérée depuis :
+http://www.ogre3d.org/download/source
+
 Elle vient avec un grand nombre de dépendances, voici une liste de celles qui m'ont manqué lors de l'install initiale. Cette liste n'est certainement pas exhaustive :
 lobois-dev libxmu-dev libzzip-dev libfreetype6-dev
 

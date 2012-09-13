@@ -2,6 +2,7 @@
 
 #include "MirrorApplication.h"
 
+
 using namespace std;
 using namespace Ogre;
 
@@ -107,6 +108,20 @@ void XN_CALLBACK_TYPE UserCalibration_CalibrationComplete(xn::SkeletonCapability
 MirrorApplication::MirrorApplication()
 {
     mSelectedBone=0;
+    mThreadRunning=false;
+    mThreadQuit=false;
+    mThread = new boost::thread(boost::bind(&MirrorApplication::kinectThread, this));
+}
+
+void MirrorApplication::destroyScene(void)
+{
+        // Stops the thread
+        assert(mThread);
+        mThreadQuit = true;
+        mThread->join();
+
+        // Destroy scene
+        BaseApplication::destroyScene();
 }
 
 void MirrorApplication::createFrameListener(void)
@@ -204,7 +219,7 @@ void MirrorApplication::createScene()
     mPointCloudEnt->setMaterialName("Pointcloud");
 
     mRootNode->attachObject(mPointCloudEnt);
-
+    mThreadRunning = true;
 
     //mModelNode->setVisible(false);
 }
@@ -247,6 +262,25 @@ bool MirrorApplication::updateBone(std::string boneName,
         return false;
     }
     return true;
+}
+
+void MirrorApplication::kinectThread()
+{
+    while(!mThreadQuit)
+    {
+        if(mThreadRunning)
+        {
+            g_Context.WaitOneUpdateAll(g_UserGenerator);
+            xn::ImageGenerator imgene;
+            g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
+            imgene.GetMetaData(mKinectVideo);
+            mDepthGenerator.GetMetaData(mKinectDepth);
+        }
+        else
+        {
+            boost::this_thread::sleep(boost::posix_time::millisec(500));
+        }
+    }
 }
 
 void MirrorApplication::updateKinectCloud()
@@ -331,7 +365,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }*/
 
 
-#if 1
+#if 0
     g_Context.WaitOneUpdateAll(g_UserGenerator);
     //g_Context.WaitAndUpdateAll();
     xn::ImageGenerator imgene;
@@ -598,6 +632,10 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_M)
     {
         mDebugRoll -= 0.1;
+    }
+    else if (arg.key == OIS::KC_C)
+    {
+        mPointCloudEnt->setVisible(!mPointCloudEnt->getVisible());
     }
     return BaseApplication::keyPressed(arg);
 }
