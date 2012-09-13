@@ -129,7 +129,7 @@ void MirrorApplication::createScene()
     mModel->setDisplaySkeleton(false);
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
-    mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.2,0.2,0.2w));
+    mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.0,0.0,0.0));
 
     AxisAlignedBox aabb = AxisAlignedBox(-10e10, -10e10, -10e10,
                                           10e10,  10e10,  10e10);
