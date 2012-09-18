@@ -16,7 +16,7 @@ Avec quelques petits ajouts (dépendances manquantes) et une version différente
     cd OpenNI/Platform/Linux/CreateRedist
     chmod +x RedistMaker
     ./RedistMaker
-    cd ../Redist/OpenNI-Bin-Dev-Linux-[xxx] (where [xxx] is your architecture and this particular OpenNI release)
+    cd ../Redist/OpenNI-Bin-Dev-Linux-*
     ./install.sh
 
 (retour au répertoire racine)
@@ -25,12 +25,10 @@ Avec quelques petits ajouts (dépendances manquantes) et une version différente
     cd SensorKinect
     git checkout faf4994fceba82e6fbd3dad16f79e4399be0c184
 
-(retour au répertoire racine)
-
     cd Platform/Linux/CreateRedist
     chmod +x RedistMaker
     sudo ./RedistMaker
-    cd ../Redist/Sensor-Bin-Linux-[xxx] (where [xxx] is your architecture and this particular OpenNI release)
+    cd ../Redist/Sensor-Bin-Linux-*
     sudo chmod +x install.sh
     sudo ./install.sh
 
