@@ -159,3 +159,8 @@ Note sur les textures et la modelisation
 ----------------------------------------
 
 Pas d'espace dans les noms de fichiers : Ogre a du mal avec ça. Spécialement avec les fichiers textures
+
+Ogre 1.8.1
+----------
+
+À cause d'un bug empechant l'affichage correct des modeles skinnés en linux 64 bits, je suis passé à Ogre 1.8.1 qui corrige un problème

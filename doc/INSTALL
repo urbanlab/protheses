@@ -32,7 +32,14 @@ Avec quelques petits ajouts (dépendances manquantes) et une version différente
     sudo chmod +x install.sh
     sudo ./install.sh
 
-La verions de OpenNI testée a l'ID SHA: 3d355acc8e31ec16253336ae9acea769ec088e04
+La versions de OpenNI testée a l'ID SHA: 3d355acc8e31ec16253336ae9acea769ec088e04
+
+Il faut également installer NITE à cette addresse :
+http://www.openni.org/Downloads/OpenNIModules.aspx
+Choisir "OpenNI Compliant Middleware Binaries"
+puis "stable"
+et la version 32 ou 64 bits qui convient
+L'installation se fait en execurant le script install.sh dans le répertoire racine de NITE
 
 Dépendances Renderer
 --------------------
@@ -41,7 +48,7 @@ Le renderer utilise une version compilée depuis les sources de la librairie Ogr
 http://www.ogre3d.org/download/source
 
 Elle vient avec un grand nombre de dépendances, voici une liste de celles qui m'ont manqué lors de l'install initiale. Cette liste n'est certainement pas exhaustive :
-lobois-dev libxmu-dev libzzip-dev libfreetype6-dev
+libois-dev libxmu-dev libzzip-dev libfreetype6-dev
 
 L'installation de Ogre3D doit être faite dans le répertoire par défaut : /usr/local
 
