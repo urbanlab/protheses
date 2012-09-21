@@ -82,6 +82,9 @@ private:
     double mKinectOffsetX;
     double mKinectOffsetY;
 
+    // Hackity stuff
+    XnSkeletonJointTransformation mRightShoulderJoint;
+
 };
 
 #endif

@@ -335,27 +335,35 @@ void MirrorApplication::updateKinectCloud()
     }
     }*/
 
+
+    XnPoint3D pt;
+    pt = mRightShoulderJoint.position.position;
+    mDepthGenerator.ConvertRealWorldToProjective(1, &pt, &pt);
+
     for(int j=0;j<480;j++)
     {
         for(int i=0;i<640;i++)
         {
-          pointlist[vindex++]=i;
-          pointlist[vindex++]=-j;
-          pointlist[vindex++]=videoDepth[kindex];
           unsigned int newIndex = mKinectOffsetX + i*mKinectScaleX +
               640*(int)(mKinectOffsetY + j*mKinectScaleY);
           newIndex = newIndex % (640*480);
-          if(labels[kindex]!=0)
+          if((labels[kindex]!=0)&&(i<pt.X))
           {
             colorarray[cindex++]=(videoImage[newIndex].nBlue)/256.0;
             colorarray[cindex++]=(videoImage[newIndex].nGreen)/256.0;
             colorarray[cindex++]=(videoImage[newIndex].nRed)/256.0;
+            pointlist[vindex++]=i;
+            pointlist[vindex++]=-j;
+            pointlist[vindex++]=videoDepth[kindex];
           }
           else
           {
             colorarray[cindex++]=0.0;
             colorarray[cindex++]=0.0;
             colorarray[cindex++]=0.0;
+            pointlist[vindex++]=0;
+            pointlist[vindex++]=0;
+            pointlist[vindex++]=0;
           }
           kindex++;
         }
@@ -428,6 +436,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_SHOULDER,joint);
+        mRightShoulderJoint = joint;
         mDepthGenerator.ConvertRealWorldToProjective
                 (1,&(joint.position.position), &xnv);
         v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
