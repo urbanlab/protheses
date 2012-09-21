@@ -39,7 +39,7 @@ bool Prosthesis::transformBone(std::string boneName,
   mSkel->GetSkeletonJoint(userId, jointName,joint);
   mDepthGen->ConvertRealWorldToProjective(1,&(joint.position.position), &xnv);
   v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
-  if((updateOrientation)&&(joint.orientation.fConfidence>0.2f))
+  if((updateOrientation)&&(joint.orientation.fConfidence>0.5f))
   {
      bone->resetToInitialState();
       Ogre::Quaternion quat;
@@ -54,7 +54,7 @@ bool Prosthesis::transformBone(std::string boneName,
       bone->setOrientation(quat*qI);
       retVal=true;
   }
-  if((updatePosition)&&(joint.position.fConfidence>0.2f))
+  if((updatePosition)&&(joint.position.fConfidence>0.3f))
   {
     bone->setPosition(mTransf.inverse() * v);
   }
