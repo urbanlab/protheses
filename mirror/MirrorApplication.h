@@ -12,6 +12,9 @@
 #include "pointcloud.h"
 #include "BaseApplication.h"
 
+#include <OgreTimer.h>
+#include "prosthesis.h"
+
 class MirrorApplication : public BaseApplication
 {
 public:
@@ -44,6 +47,8 @@ protected:
 
 
 private:
+    Prosthesis *mProsthesis;
+
     Ogre::Entity * mModel;
     Ogre::SceneNode * mRootNode;
     Ogre::SceneNode * mModelNode;
@@ -66,6 +71,7 @@ private:
 
     double mDebugYaw, mDebugPitch, mDebugRoll;
 
+    Ogre::Timer mTimerSinceDetection;
 
 };
 

@@ -31,16 +31,26 @@ public:
     Prosthesis(std::string name, double start, double fid, double fos,
                double duration ,int  type) :
       mFilename(name), mStartTime(start), mFadeinSpeed(fid),
-      mFadeoutSpeed(fos), mDuration(duration), mType(type) {}
+      mFadeoutSpeed(fos), mDuration(duration), mType(type)
+    {
+      dbgT = Ogre::Vector3(-5, -120, 3);
+      dbgYaw = 160.0;
+      dbgPitch = -12.0;
+      dbgRoll = 98.0;
+    }
     void load(Ogre::SceneManager* mgr);
     void updateAllJoints(unsigned long dt, xn::SkeletonCapability* sc,
                 xn::DepthGenerator *dg, XnUserID user);
-    void transformBone(std::string boneName, XnSkeletonJoint jointName,
+    bool transformBone(std::string boneName, XnSkeletonJoint jointName,
                        XnUserID userId,
                        bool inheritsScale,
                        bool inheritOrientation,
                        bool updatePosition,
                        bool updateOrientation);
+    Ogre::Vector3 dbgT;
+    double dbgYaw;
+    double dbgPitch;
+    double dbgRoll;
 };
 
 #endif // PROSTHESIS_H

@@ -17,7 +17,7 @@ void Prosthesis::load(Ogre::SceneManager * mgr)
   mEntity->getMesh()->_setBounds(aabb);
 }
 
-void Prosthesis::transformBone(std::string boneName,
+bool Prosthesis::transformBone(std::string boneName,
                                XnSkeletonJoint jointName,
                                XnUserID userId,
                                bool inheritsScale=true,
@@ -29,17 +29,19 @@ void Prosthesis::transformBone(std::string boneName,
   Ogre::Vector3 v;
   XnPoint3D xnv;
   XnSkeletonJointTransformation joint;
+  bool retVal=false;
+
   bone = mEntity->getSkeleton()->getBone(boneName);
   bone->setManuallyControlled(true);
   bone->setInheritOrientation(inheritOrientation);
   bone->setInheritScale(inheritsScale);
-  bone->resetToInitialState();
 
   mSkel->GetSkeletonJoint(userId, jointName,joint);
   mDepthGen->ConvertRealWorldToProjective(1,&(joint.position.position), &xnv);
   v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
-  if((updateOrientation)&&(joint.orientation.fConfidence>0.5f))
+  if((updateOrientation)&&(joint.orientation.fConfidence>0.2f))
   {
+     bone->resetToInitialState();
       Ogre::Quaternion quat;
       Ogre::Quaternion qI = Ogre::Quaternion::IDENTITY;
       float* matE = joint.orientation.orientation.elements;
@@ -50,12 +52,14 @@ void Prosthesis::transformBone(std::string boneName,
       bone->resetOrientation();
       quat = bone->convertWorldToLocalOrientation(quat);
       bone->setOrientation(quat*qI);
+      retVal=true;
   }
-  if(updatePosition)
+  if((updatePosition)&&(joint.position.fConfidence>0.2f))
   {
     bone->setPosition(mTransf.inverse() * v);
   }
   mTransf = mNode->_getFullTransform() * bone->_getFullTransform();
+  return retVal;
 }
 
 void Prosthesis::updateAllJoints(unsigned long dt,
@@ -63,23 +67,56 @@ void Prosthesis::updateAllJoints(unsigned long dt,
                         xn::DepthGenerator *dg,
                         XnUserID user)
 {
+  Ogre::Bone * bone;
   mSkel = sc;
   mDepthGen = dg;
   mTransf = mNode->_getFullTransform();
-  if(mType==1)
+  if(mType==1)    // Realistic arm
   {
-    Ogre::Bone * bone = mEntity->getSkeleton()->getBone("epaule_");
-    transformBone("epaule_", XN_SKEL_NECK, user, false, false,true, true);
-    bone->setScale(500,500,500);
-    static int dbgi=0;
-    dbgi++;
-    bone->yaw(Ogre::Radian(Ogre::Degree(90+dbgi)));
-    bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
-    bone->roll(Ogre::Radian(Ogre::Degree(-90)));
+    bone = mEntity->getSkeleton()->getBone("epaule_");
+    if(transformBone("epaule_", XN_SKEL_NECK, user, false, false,true, true))
+    {
+      bone->setScale(500,500,500);
+      bone->translate(Ogre::Vector3(55, 75, 315), Ogre::Node::TS_LOCAL);
+      bone->yaw(Ogre::Radian(Ogre::Degree(90)));
+      bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
+      bone->roll(Ogre::Radian(Ogre::Degree(-90)));
 
-
+    }
     transformBone("bras_", XN_SKEL_RIGHT_SHOULDER,user,true,true,false,true);
     transformBone("avant_bras_", XN_SKEL_RIGHT_ELBOW,user,true,true,false,true);
     transformBone("poignet_", XN_SKEL_RIGHT_HAND,user,true,true,false,true);
+  }
+  else if(mType==2) //Mechanical arm
+  {
+    bone = mEntity->getSkeleton()->getBone("epaule_");
+    if(transformBone("epaule_", XN_SKEL_NECK, user, false, false,true, true))
+    {
+      bone->setScale(500,500,500);
+      bone->translate(Ogre::Vector3(55, 10, 23), Ogre::Node::TS_LOCAL);
+      bone->yaw(Ogre::Radian(Ogre::Degree(90)));
+      bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
+      bone->roll(Ogre::Radian(Ogre::Degree(-90)));
+
+    }
+    transformBone("bras", XN_SKEL_RIGHT_SHOULDER,user,true,true,false,true);
+    transformBone("avant_bras", XN_SKEL_RIGHT_ELBOW,user,true,true,false,true);
+    transformBone("main", XN_SKEL_RIGHT_HAND,user,true,true,false,true);
+  }
+  else if(mType==3)   // Heart
+  {
+    if(transformBone("Bone001", XN_SKEL_NECK, user, false, false,true, true))
+    {
+      bone = mEntity->getSkeleton()->getBone("Bone001");
+      bone->translate(Ogre::Vector3(-5, -120, 3), Ogre::Node::TS_LOCAL);
+      bone->yaw(Ogre::Radian(Ogre::Degree(160)));
+      bone->pitch(Ogre::Radian(Ogre::Degree(-12)));
+      bone->roll(Ogre::Radian(Ogre::Degree(98)));
+    }
+    bone = mEntity->getSkeleton()->getBone("Bone007");
+    double s = cos(dt/500.0)*0.2+1.1;
+    bone->setScale(s,s,s);
+    bone->setManuallyControlled(true);
+    bone->setInheritScale(false);
   }
 }
