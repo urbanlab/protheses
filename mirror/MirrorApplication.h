@@ -24,10 +24,13 @@ public:
     // Should be private and grouped with all the dirty globals in main
     xn::ImageMetaData mKinectVideo;
     xn::DepthMetaData mKinectDepth;
+    xn::SceneMetaData mKinectLabels;
     xn::DepthGenerator mDepthGenerator;
+
 
     bool mThreadRunning;
     bool mThreadQuit;
+    bool mThreadRanOnce;
     boost::thread * mThread;
     boost::mutex m_Mutex;
 
@@ -73,6 +76,11 @@ private:
     double mDebugYaw, mDebugPitch, mDebugRoll;
 
     Ogre::Timer mTimerSinceDetection;
+
+    double mKinectScaleX;
+    double mKinectScaleY;
+    double mKinectOffsetX;
+    double mKinectOffsetY;
 
 };
 

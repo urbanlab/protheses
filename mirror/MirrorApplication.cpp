@@ -108,9 +108,15 @@ void XN_CALLBACK_TYPE UserCalibration_CalibrationComplete(xn::SkeletonCapability
 MirrorApplication::MirrorApplication()
 {
     mSelectedBone=0;
+    mCurrentUserXn=0;
     mThreadRunning=false;
     mThreadQuit=false;
+    mThreadRanOnce=false;
     mThread = new boost::thread(boost::bind(&MirrorApplication::kinectThread, this));
+    mKinectScaleX = 0.88;
+    mKinectScaleY = 1.0;
+    mKinectOffsetX = 22.0;
+    mKinectOffsetY = 0.0;
 }
 
 void MirrorApplication::destroyScene(void)
@@ -168,7 +174,7 @@ void MirrorApplication::createScene()
     mCamPresetPos[3] = Vector3(-1200,-10,950);
     mCamPresetLookAt[3] = Vector3(0,0,950);
 
-    bool visible = true;
+    bool visible = false;
     mKinectNode[0] = mRootNode->createChildSceneNode("K1");
     mKinectNode[1] = mRootNode->createChildSceneNode("K2");
     mKinectNode[2] = mRootNode->createChildSceneNode("K3");
@@ -192,6 +198,7 @@ void MirrorApplication::createScene()
     mDebugNode[0]->attachObject(mDebugEnt[0]);
     mDebugNode[0]->setPosition(640,-480,1024);
     mDebugNode[0]->setScale(0.2,0.2,0.2);
+    mDebugNode[0]->setVisible(visible);
     //mDebugNode[0]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
 
@@ -200,13 +207,16 @@ void MirrorApplication::createScene()
     mDebugNode[1]->attachObject(mDebugEnt[1]);
     mDebugNode[1]->setPosition(0,0,1024);
     mDebugNode[1]->setScale(0.2,0.2,0.2);
+    mDebugNode[1]->setVisible(visible);
     //mDebugNode[1]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+
 
     mDebugEnt[2] = mSceneMgr->createEntity("DebugEnt2", "knot.mesh");
     mDebugNode[2] = mRootNode->createChildSceneNode("DebugNode2");
     mDebugNode[2]->attachObject(mDebugEnt[2]);
     mDebugNode[2]->setPosition(0,0,0);
     mDebugNode[2]->setScale(1,1,1);
+    mDebugNode[2]->setVisible(visible);
     //mDebugNode[2]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
 
@@ -286,6 +296,8 @@ void MirrorApplication::kinectThread()
             g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
             imgene.GetMetaData(mKinectVideo);
             mDepthGenerator.GetMetaData(mKinectDepth);
+            g_UserGenerator.GetUserPixels(0, mKinectLabels);
+            mThreadRanOnce=true;
         }
         else
         {
@@ -299,6 +311,7 @@ void MirrorApplication::updateKinectCloud()
     const XnRGB24Pixel* videoImage = mKinectVideo.RGB24Data();
     // actually an uint16*
     const XnDepthPixel* videoDepth = mKinectDepth.Data();
+    const XnLabel* labels = mKinectLabels.Data();
     const int numpoints = 640*480;
     static float pointlist[numpoints*3];
     static float colorarray[numpoints*3];
@@ -307,6 +320,8 @@ void MirrorApplication::updateKinectCloud()
     int kindex=0;
     static float dT = 0.0;
     dT+=0.04;
+
+    if(!mThreadRanOnce) return;
 
 /*
     int pointwalker=0;
@@ -320,20 +335,29 @@ void MirrorApplication::updateKinectCloud()
     }
     }*/
 
-    int colcount=0;
     for(int j=0;j<480;j++)
     {
         for(int i=0;i<640;i++)
         {
-            int col=0;
-            pointlist[vindex++]=i;
-            pointlist[vindex++]=-j;
-            pointlist[vindex++]=videoDepth[kindex];
-            colorarray[cindex++]=(videoImage[kindex].nBlue)/256.0;
-            colorarray[cindex++]=(videoImage[kindex].nGreen)/256.0;
-            colorarray[cindex++]=(videoImage[kindex].nRed)/256.0;
-            kindex++;
-            if(col>0) colcount++;
+          pointlist[vindex++]=i;
+          pointlist[vindex++]=-j;
+          pointlist[vindex++]=videoDepth[kindex];
+          unsigned int newIndex = mKinectOffsetX + i*mKinectScaleX +
+              640*(int)(mKinectOffsetY + j*mKinectScaleY);
+          newIndex = newIndex % (640*480);
+          if(labels[kindex]!=0)
+          {
+            colorarray[cindex++]=(videoImage[newIndex].nBlue)/256.0;
+            colorarray[cindex++]=(videoImage[newIndex].nGreen)/256.0;
+            colorarray[cindex++]=(videoImage[newIndex].nRed)/256.0;
+          }
+          else
+          {
+            colorarray[cindex++]=0.0;
+            colorarray[cindex++]=0.0;
+            colorarray[cindex++]=0.0;
+          }
+          kindex++;
         }
     }
     mPointCloud->updateVertexColours(640*480, colorarray);
@@ -516,19 +540,35 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     {
         mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
     }
-    else if (arg.key == OIS::KC_SPACE)
+    else if (arg.key == OIS::KC_B)
     {
-        mCurrentDisplayed = (mCurrentDisplayed+1)%3;
+        mKinectOffsetY += 1;
+    }
+    else if (arg.key == OIS::KC_N)
+    {
+        mKinectOffsetY -= 1;
     }
     else if (arg.key == OIS::KC_C)
     {
-        mPointCloudEnt->setVisible(!mPointCloudEnt->getVisible());
+        mKinectScaleY +=0.01;
+    }
+    else if (arg.key == OIS::KC_V)
+    {
+        mKinectScaleY -=0.01;
+    }
+    else if (arg.key == OIS::KC_SPACE)
+    {
+        mCurrentDisplayed = (mCurrentDisplayed+1)%3;
     }
     for(int i=0;i<3;i++)
     {
       mProsthesis[i]->hide();
     }
     mProsthesis[mCurrentDisplayed]->show();
+    cout << mKinectOffsetX << "\t";
+    cout << mKinectOffsetY << "\t";
+    cout << mKinectScaleX << "\t";
+    cout << mKinectScaleY << endl;
     //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
     return BaseApplication::keyPressed(arg);
 }
@@ -606,7 +646,6 @@ int main(int argc, char *argv[])
     nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, app.mDepthGenerator);
     CHECK_RC(nRetVal, "Init Depth video input");
     app.mDepthGenerator.GetMetaData(app.mKinectDepth);
-
 
     printf("Starting to run\n");
     if(g_bNeedPose)
