@@ -114,9 +114,9 @@ MirrorApplication::MirrorApplication()
     mThreadRanOnce=false;
     mThread = new boost::thread(boost::bind(&MirrorApplication::kinectThread, this));
     mKinectScaleX = 0.88;
-    mKinectScaleY = 1.0;
+    mKinectScaleY = 0.86;
     mKinectOffsetX = 22.0;
-    mKinectOffsetY = 0.0;
+    mKinectOffsetY = 49;
 }
 
 void MirrorApplication::destroyScene(void)
