@@ -210,11 +210,14 @@ void MirrorApplication::createScene()
     //mDebugNode[2]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
 
-    //mProsthesis = new Prosthesis("coeur_scene_3008bras.mesh", 0, 1,1,20,1);
-    mProsthesis = new Prosthesis("coeur_scene_3008Hose001.mesh", 0, 1,1,20,2);
-    //mProsthesis = new Prosthesis("Coeur_I..mesh", 0, 1,1,20,3);
+    mProsthesis[0] = new Prosthesis("coeur_scene_3008bras.mesh", 0, 1,1,20,1);
+    mProsthesis[1] = new Prosthesis("coeur_scene_3008Hose001.mesh", 0, 1,1,20,2);
+    mProsthesis[2] = new Prosthesis("Coeur_I..mesh", 0, 1,1,20,3);
+    mCurrentDisplayed=0;
 
-    mProsthesis->load(mSceneMgr);
+    mProsthesis[0]->load(mSceneMgr);
+    mProsthesis[1]->load(mSceneMgr);
+    mProsthesis[2]->load(mSceneMgr);
 
 
     const int numpoints = 640*480;
@@ -391,8 +394,9 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(found)
     {
       xn::SkeletonCapability sc = g_UserGenerator.GetSkeletonCap();
-      mProsthesis->updateAllJoints(mTimerSinceDetection.getMilliseconds(),
-                                   &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
+      mProsthesis[mCurrentDisplayed]->updateAllJoints(
+            mTimerSinceDetection.getMilliseconds(),
+            &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
 
         XnSkeletonJointTransformation joint;
         Vector3 v;
@@ -464,82 +468,68 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
         mCamera->setPosition(mCamPresetPos[3]);
         mCamera->lookAt(mCamPresetLookAt[3]);
     }
-    else if (arg.key == OIS::KC_NUMPAD7)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("epaule_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD8)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("bras_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD9)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("avant_bras_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD6)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("poignet_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD5)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("main_");
-    }
     else if (arg.key == OIS::KC_I)
     {
-        mProsthesis->dbgT.x += 5;
+        mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
     }
     else if (arg.key == OIS::KC_K)
     {
-        mProsthesis->dbgT.x -= 5;
+        mProsthesis[mCurrentDisplayed]->dbgT.x -= 5;
     }
     else if (arg.key == OIS::KC_O)
     {
-        mProsthesis->dbgT.y += 5;
+        mProsthesis[mCurrentDisplayed]->dbgT.y += 5;
     }
     else if (arg.key == OIS::KC_L)
     {
-        mProsthesis->dbgT.y -= 5;
+        mProsthesis[mCurrentDisplayed]->dbgT.y -= 5;
     }
     else if (arg.key == OIS::KC_P)
     {
-        mProsthesis->dbgT.z += 5;
+        mProsthesis[mCurrentDisplayed]->dbgT.z += 5;
     }
     else if (arg.key == OIS::KC_M)
     {
-        mProsthesis->dbgT.z -= 5;
+        mProsthesis[mCurrentDisplayed]->dbgT.z -= 5;
     }
     else if (arg.key == OIS::KC_T)
     {
-        mProsthesis->dbgYaw += 1;
+        mProsthesis[mCurrentDisplayed]->dbgYaw += 1;
     }
     else if (arg.key == OIS::KC_G)
     {
-        mProsthesis->dbgYaw -= 1;
+        mProsthesis[mCurrentDisplayed]->dbgYaw -= 1;
     }
     else if (arg.key == OIS::KC_Y)
     {
-        mProsthesis->dbgPitch += 1;
+        mProsthesis[mCurrentDisplayed]->dbgPitch += 1;
     }
     else if (arg.key == OIS::KC_H)
     {
-        mProsthesis->dbgPitch -= 1;
+        mProsthesis[mCurrentDisplayed]->dbgPitch -= 1;
     }
     else if (arg.key == OIS::KC_U)
     {
-        mProsthesis->dbgRoll += 1;
+        mProsthesis[mCurrentDisplayed]->dbgRoll += 1;
     }
     else if (arg.key == OIS::KC_J)
     {
-        mProsthesis->dbgRoll -= 1;
+        mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
+    }
+    else if (arg.key == OIS::KC_SPACE)
+    {
+        mCurrentDisplayed = (mCurrentDisplayed+1)%3;
     }
     else if (arg.key == OIS::KC_C)
     {
         mPointCloudEnt->setVisible(!mPointCloudEnt->getVisible());
     }
-    cout << mProsthesis->dbgYaw << "\t";
-    cout << mProsthesis->dbgPitch << "\t";
-    cout << mProsthesis->dbgRoll << "\t";
-    cout << mProsthesis->dbgT << endl;
+    for(int i=0;i<3;i++)
+    {
+      mProsthesis[i]->hide();
+    }
+    mProsthesis[mCurrentDisplayed]->show();
+    //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
     return BaseApplication::keyPressed(arg);
 }
 

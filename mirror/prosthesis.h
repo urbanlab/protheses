@@ -7,6 +7,8 @@
 #include <OgreEntity.h>
 #include <OgreMatrix4.h>
 #include <OgreMatrix3.h>
+#include <OgreSubEntity.h>
+#include <OgreMaterial.h>
 
 #include <XnCppWrapper.h>
 
@@ -47,6 +49,9 @@ public:
                        bool inheritOrientation,
                        bool updatePosition,
                        bool updateOrientation);
+
+    void show();
+    void hide();
     Ogre::Vector3 dbgT;
     double dbgYaw;
     double dbgPitch;

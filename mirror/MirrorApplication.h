@@ -47,7 +47,8 @@ protected:
 
 
 private:
-    Prosthesis *mProsthesis;
+    Prosthesis *mProsthesis[3];
+    int mCurrentDisplayed;
 
     Ogre::Entity * mModel;
     Ogre::SceneNode * mRootNode;

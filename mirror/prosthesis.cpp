@@ -67,6 +67,29 @@ void Prosthesis::updateAllJoints(unsigned long dt,
                         xn::DepthGenerator *dg,
                         XnUserID user)
 {
+  float seconds = dt / 1000.0;
+  // Manage visibility
+  /*if((dt<mStartTime)||(dt>mStartTime+mDuration+mFadeinSpeed+mFadeoutSpeed))
+  {
+    mEntity->setVisible(false);
+    mNode->setVisible(false);
+    return;
+  }
+  else
+  {
+    mEntity->setVisible(true);
+    mNode->setVisible(true);
+  }*/
+  //if(dt<mStartTime+mFadeinSpeed)
+  {
+    //double alpha = (dt-mStartTime)/mFadeinSpeed;
+    /*double alpha = fabs(cos(dt));
+    Ogre::Material * mat = mEntity->getSubEntity(0)->getMaterial().get();
+    Ogre::Pass *myPass = mat->getTechnique(0)->getPass(0);
+    myPass->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 1.0, 1.0, alpha);*/
+  }
+
+  // Manage position and pose
   Ogre::Bone * bone;
   mSkel = sc;
   mDepthGen = dg;
@@ -77,7 +100,9 @@ void Prosthesis::updateAllJoints(unsigned long dt,
     if(transformBone("epaule_", XN_SKEL_NECK, user, false, false,true, true))
     {
       bone->setScale(500,500,500);
-      bone->translate(Ogre::Vector3(55, 75, 315), Ogre::Node::TS_LOCAL);
+      bone->translate(Ogre::Vector3(-5, 50, 33), Ogre::Node::TS_LOCAL);
+      //bone->translate(dbgT, Ogre::Node::TS_LOCAL);
+
       bone->yaw(Ogre::Radian(Ogre::Degree(90)));
       bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
       bone->roll(Ogre::Radian(Ogre::Degree(-90)));
@@ -119,4 +144,16 @@ void Prosthesis::updateAllJoints(unsigned long dt,
     bone->setManuallyControlled(true);
     bone->setInheritScale(false);
   }
+}
+
+void Prosthesis::hide()
+{
+  mEntity->setVisible(false);
+  mNode->setVisible(false);
+}
+
+void Prosthesis::show()
+{
+  mEntity->setVisible(true);
+  mNode->setVisible(true);
 }
