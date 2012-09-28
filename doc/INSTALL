@@ -1,5 +1,7 @@
 L'application mirror nécessite deux grosses dépendances qui doivent être installées depuis leurs sources respectives : OpenNI (qui permet de bénéficier du trakcing de squelette de la kienct) et Ogre3D (qui permet l'affichage d'un modelle squelettisé). Ce document décrit la procédure d'installation de ces deux dépendances.
 
+OpenNI a parfois des problemes sur les OS 64 bits. Si possible, tentez d'installer une version 32 bits.
+
 Installation Kinect sur le PC Erasme
 ------------------------------------
 
@@ -17,7 +19,7 @@ Avec quelques petits ajouts (dépendances manquantes) et une version différente
     chmod +x RedistMaker
     ./RedistMaker
     cd ../Redist/OpenNI-Bin-Dev-Linux-*
-    ./install.sh
+    sudo /install.sh
 
 (retour au répertoire racine)
 
