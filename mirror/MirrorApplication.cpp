@@ -108,9 +108,15 @@ void XN_CALLBACK_TYPE UserCalibration_CalibrationComplete(xn::SkeletonCapability
 MirrorApplication::MirrorApplication()
 {
     mSelectedBone=0;
+    mCurrentUserXn=0;
     mThreadRunning=false;
     mThreadQuit=false;
+    mThreadRanOnce=false;
     mThread = new boost::thread(boost::bind(&MirrorApplication::kinectThread, this));
+    mKinectScaleX = 0.88;
+    mKinectScaleY = 0.86;
+    mKinectOffsetX = 22.0;
+    mKinectOffsetY = 49;
 }
 
 void MirrorApplication::destroyScene(void)
@@ -137,18 +143,18 @@ void MirrorApplication::createScene()
     const float SCALE = 1.0f;
 
     mRootNode = mSceneMgr->getRootSceneNode();
-    mModel = mSceneMgr->createEntity("Model", mMeshFilename);
+    /*mModel = mSceneMgr->createEntity("Model", mMeshFilename);
     mModelNode = mRootNode->createChildSceneNode("ModelNode");
     mModelNode->attachObject(mModel);
     mModelNode->setScale(SCALE, SCALE, SCALE);
-    mModel->setDisplaySkeleton(false);
+    mModel->setDisplaySkeleton(false);*/
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
     mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.0,0.0,0.0));
 
-    AxisAlignedBox aabb = AxisAlignedBox(-10e10, -10e10, -10e10,
-                                          10e10,  10e10,  10e10);
-    mModel->getMesh()->_setBounds(aabb);
+    //AxisAlignedBox aabb = AxisAlignedBox(-10e10, -10e10, -10e10,
+    //                                          10e10,  10e10,  10e10);
+    //mModel->getMesh()->_setBounds(aabb);
 
     Ogre::Light* light = mSceneMgr->createLight("MainLight");
     light->setPosition(20.0f, 80.0f, 1050.0f);
@@ -168,7 +174,7 @@ void MirrorApplication::createScene()
     mCamPresetPos[3] = Vector3(-1200,-10,950);
     mCamPresetLookAt[3] = Vector3(0,0,950);
 
-    bool visible = true;
+    bool visible = false;
     mKinectNode[0] = mRootNode->createChildSceneNode("K1");
     mKinectNode[1] = mRootNode->createChildSceneNode("K2");
     mKinectNode[2] = mRootNode->createChildSceneNode("K3");
@@ -192,7 +198,8 @@ void MirrorApplication::createScene()
     mDebugNode[0]->attachObject(mDebugEnt[0]);
     mDebugNode[0]->setPosition(640,-480,1024);
     mDebugNode[0]->setScale(0.2,0.2,0.2);
-    mDebugNode[0]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+    mDebugNode[0]->setVisible(visible);
+    //mDebugNode[0]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
 
     mDebugEnt[1] = mSceneMgr->createEntity("DebugEnt1", "knot.mesh");
@@ -200,14 +207,28 @@ void MirrorApplication::createScene()
     mDebugNode[1]->attachObject(mDebugEnt[1]);
     mDebugNode[1]->setPosition(0,0,1024);
     mDebugNode[1]->setScale(0.2,0.2,0.2);
-    mDebugNode[1]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+    mDebugNode[1]->setVisible(visible);
+    //mDebugNode[1]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+
 
     mDebugEnt[2] = mSceneMgr->createEntity("DebugEnt2", "knot.mesh");
     mDebugNode[2] = mRootNode->createChildSceneNode("DebugNode2");
     mDebugNode[2]->attachObject(mDebugEnt[2]);
     mDebugNode[2]->setPosition(0,0,0);
     mDebugNode[2]->setScale(1,1,1);
-    mDebugNode[2]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+    mDebugNode[2]->setVisible(visible);
+    //mDebugNode[2]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
+
+
+    mProsthesis[0] = new Prosthesis("coeur_scene_3008bras.mesh", 0, 1,1,20,1);
+    mProsthesis[1] = new Prosthesis("coeur_scene_3008Hose001.mesh", 0, 1,1,20,2);
+    mProsthesis[2] = new Prosthesis("Coeur_I..mesh", 0, 1,1,20,3);
+    mCurrentDisplayed=0;
+
+    mProsthesis[0]->load(mSceneMgr);
+    mProsthesis[1]->load(mSceneMgr);
+    mProsthesis[2]->load(mSceneMgr);
+
 
     const int numpoints = 640*480;
     float pointlist[numpoints*3];
@@ -275,6 +296,8 @@ void MirrorApplication::kinectThread()
             g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, imgene);
             imgene.GetMetaData(mKinectVideo);
             mDepthGenerator.GetMetaData(mKinectDepth);
+            g_UserGenerator.GetUserPixels(0, mKinectLabels);
+            mThreadRanOnce=true;
         }
         else
         {
@@ -288,6 +311,7 @@ void MirrorApplication::updateKinectCloud()
     const XnRGB24Pixel* videoImage = mKinectVideo.RGB24Data();
     // actually an uint16*
     const XnDepthPixel* videoDepth = mKinectDepth.Data();
+    const XnLabel* labels = mKinectLabels.Data();
     const int numpoints = 640*480;
     static float pointlist[numpoints*3];
     static float colorarray[numpoints*3];
@@ -296,6 +320,8 @@ void MirrorApplication::updateKinectCloud()
     int kindex=0;
     static float dT = 0.0;
     dT+=0.04;
+
+    if(!mThreadRanOnce) return;
 
 /*
     int pointwalker=0;
@@ -309,20 +335,37 @@ void MirrorApplication::updateKinectCloud()
     }
     }*/
 
-    int colcount=0;
+
+    XnPoint3D pt;
+    pt = mRightShoulderJoint.position.position;
+    mDepthGenerator.ConvertRealWorldToProjective(1, &pt, &pt);
+
     for(int j=0;j<480;j++)
     {
         for(int i=0;i<640;i++)
         {
-            int col=0;
+          unsigned int newIndex = mKinectOffsetX + i*mKinectScaleX +
+              640*(int)(mKinectOffsetY + j*mKinectScaleY);
+          newIndex = newIndex % (640*480);
+          if((labels[kindex]!=0)&&(i<pt.X))
+          {
+            colorarray[cindex++]=(videoImage[newIndex].nBlue)/256.0;
+            colorarray[cindex++]=(videoImage[newIndex].nGreen)/256.0;
+            colorarray[cindex++]=(videoImage[newIndex].nRed)/256.0;
             pointlist[vindex++]=i;
             pointlist[vindex++]=-j;
             pointlist[vindex++]=videoDepth[kindex];
-            colorarray[cindex++]=(videoImage[kindex].nBlue)/256.0;
-            colorarray[cindex++]=(videoImage[kindex].nGreen)/256.0;
-            colorarray[cindex++]=(videoImage[kindex].nRed)/256.0;
-            kindex++;
-            if(col>0) colcount++;
+          }
+          else
+          {
+            colorarray[cindex++]=0.0;
+            colorarray[cindex++]=0.0;
+            colorarray[cindex++]=0.0;
+            pointlist[vindex++]=0;
+            pointlist[vindex++]=0;
+            pointlist[vindex++]=0;
+          }
+          kindex++;
         }
     }
     mPointCloud->updateVertexColours(640*480, colorarray);
@@ -335,34 +378,11 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     static float dT=0.0;
     dT = dT + 0.01;
 
-    mModelNode->setPosition(0,0,0);
+    /*mModelNode->setPosition(0,0,0);
     bone = mModel->getSkeleton()->getBone("epaule_");
     bone->setManuallyControlled(true);
-    bone->setScale(1000,1000,1000);
+    bone->setScale(1000,1000,1000);*/
     updateKinectCloud();
-
-
-    /*XnUserID aUsers[15];
-    XnUInt16 nUsers;
-    XnSkeletonJointTransformation joint;
-
-    g_Context.WaitOneUpdateAll(g_UserGenerator);
-    // print the torso information for the first user already tracking
-    nUsers=15;
-    g_UserGenerator.GetUsers(aUsers, nUsers);
-
-    for(XnUInt16 i=0; i<nUsers; i++)
-    {
-        if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])==TRUE)
-        {
-            g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i],XN_SKEL_TORSO,joint);
-                printf("user %d: head at (%6.2f,%6.2f,%6.2f)\n",aUsers[i],
-                                                                joint.position.position.X,
-                                                                joint.position.position.Y,
-                                                                joint.position.position.Z);
-                break;
-        }
-    }*/
 
 
 #if 0
@@ -389,8 +409,14 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])==TRUE)
         {
-            mCurrentUserXn=i;
-            found=true;
+          if(mCurrentUserXn!=i)
+          {
+            mTimerSinceDetection.reset();
+          }
+          mCurrentUserXn=i;
+          //cout << "Found = "<<mCurrentUserXn<<endl;
+          //cout << mTimerSinceDetection.getMilliseconds()<<endl;
+          found=true;
         }
     }
 
@@ -399,137 +425,23 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if(found)
     {
+      xn::SkeletonCapability sc = g_UserGenerator.GetSkeletonCap();
+      mProsthesis[mCurrentDisplayed]->updateAllJoints(
+            mTimerSinceDetection.getMilliseconds(),
+            &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
+
         XnSkeletonJointTransformation joint;
         Vector3 v;
         XnPoint3D xnv;
-        Bone* bone_epaule, *bone_abras, *bone_bras, *bone_poignet;
-        Quaternion quat, qI;
-        Matrix4 transf;
-        Matrix3 matOri;
-        float * matE;
-        mModelNode->setPosition(0,0,0);
-
-        transf = mModelNode->_getFullTransform();
-
-        g_UserGenerator.GetSkeletonCap().
-                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_NECK,joint);
-        mDepthGenerator.ConvertRealWorldToProjective
-                (1,&(joint.position.position), &xnv);
-        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
-
-        bone = mModel->getSkeleton()->getBone("epaule_");
-        bone_epaule = bone;
-        bone->setManuallyControlled(true);
-        bone->setInheritOrientation(false);
-        bone->setInheritScale(false);
-        bone->resetToInitialState();
-        if(joint.orientation.fConfidence>0.5f)
-        {
-            qI = Quaternion::IDENTITY; //bone->getInitialOrientation();
-            matE = joint.orientation.orientation.elements;
-            matOri = Matrix3(  matE[0], matE[1], matE[2],
-                               matE[3], matE[4], matE[5],
-                               matE[6], matE[7], matE[8]);
-            quat.FromRotationMatrix(matOri);
-            bone->resetOrientation();
-            quat = bone->convertWorldToLocalOrientation(quat);
-            bone->setOrientation(quat*qI);
-            bone->yaw(Radian(Degree(90))+Radian(mDebugYaw));
-            bone->pitch(Radian(Degree(-51))+Radian(mDebugPitch));
-            bone->roll(Radian(Degree(-90))+Radian(mDebugRoll));
-            cout << mDebugYaw<<" , "<<mDebugPitch<<" , "<<mDebugRoll<<endl;
-        }
-        //quat.FromAxes();
-        //bone->pitch(Radian(Degree(180)));
-        //bone->yaw(Radian(Degree(180)));
-
-
-        bone->setScale(500,500,500);
-        bone->setPosition(transf.inverse() * v);
-        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
 
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_SHOULDER,joint);
-        mDepthGenerator.ConvertRealWorldToProjective
-                (1,&(joint.position.position), &xnv);
-        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
-
-        bone = mModel->getSkeleton()->getBone("bras_");
-        bone_bras = bone;
-
-        bone->setManuallyControlled(true);
-        bone->setInheritOrientation(true);
-        bone->resetToInitialState();
-        if(joint.orientation.fConfidence>0.5f)
-        {
-            qI = Quaternion::IDENTITY; //bone->getInitialOrientation();
-            matE = joint.orientation.orientation.elements;
-            matOri = Matrix3(  matE[0], matE[1], matE[2],
-                               matE[3], matE[4], matE[5],
-                               matE[6], matE[7], matE[8]);
-            quat.FromRotationMatrix(matOri);
-            bone->resetOrientation();
-            quat = bone->convertWorldToLocalOrientation(quat);
-            bone->setOrientation(quat*qI);
-        }
-        //bone->setPosition(0,0,0);
-        //cout << "Init position bras_ : "<< bone->getPosition()<< endl;
-
-        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
-        g_UserGenerator.GetSkeletonCap().
-                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_ELBOW,joint);
-        mDepthGenerator.ConvertRealWorldToProjective
-                (1,&(joint.position.position), &xnv);
-        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
-        bone = mModel->getSkeleton()->getBone("avant_bras_");
-        bone_abras = bone;
-        bone->setManuallyControlled(true);
-        bone->setInheritOrientation(true);
-        if(joint.orientation.fConfidence>0.5f)
-        {
-            qI = Quaternion::IDENTITY; //bone->getInitialOrientation();
-            matE = joint.orientation.orientation.elements;
-            matOri = Matrix3(  matE[0], matE[1], matE[2],
-                               matE[3], matE[4], matE[5],
-                               matE[6], matE[7], matE[8]);
-            quat.FromRotationMatrix(matOri);
-            bone->resetOrientation();
-            quat = bone->convertWorldToLocalOrientation(quat);
-            bone->setOrientation(quat*qI);
-        }
-        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
-
-        g_UserGenerator.GetSkeletonCap().
-                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_HAND,joint);
-        mDepthGenerator.ConvertRealWorldToProjective
-                (1,&(joint.position.position), &xnv);
-        v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
-        bone = mModel->getSkeleton()->getBone("poignet_");
-        bone_poignet = bone;
-        bone->setManuallyControlled(true);
-        bone->setInheritOrientation(true);
-        if(joint.orientation.fConfidence>0.5f)
-        {
-            qI = Quaternion::IDENTITY; //bone->getInitialOrientation();
-            matE = joint.orientation.orientation.elements;
-            matOri = Matrix3(  matE[0], matE[1], matE[2],
-                               matE[3], matE[4], matE[5],
-                               matE[6], matE[7], matE[8]);
-            quat.FromRotationMatrix(matOri);
-            bone->resetOrientation();
-            quat = bone->convertWorldToLocalOrientation(quat);
-            bone->setOrientation(quat*qI);
-        }
-        transf = mModelNode->_getFullTransform()* bone->_getFullTransform();
-
-
-        g_UserGenerator.GetSkeletonCap().
-                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_SHOULDER,joint);
+        mRightShoulderJoint = joint;
         mDepthGenerator.ConvertRealWorldToProjective
                 (1,&(joint.position.position), &xnv);
         v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[1]->setPosition(v);
-        cout << "shoulder=" << v << endl;
+        //cout << "shoulder=" << v << endl;
 
 
         g_UserGenerator.GetSkeletonCap().
@@ -538,7 +450,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 (1,&(joint.position.position), &xnv);
         v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[2]->setPosition(v);
-        cout << "elbow=" << v << endl;
+        //cout << "elbow=" << v << endl;
 
 
         g_UserGenerator.GetSkeletonCap().
@@ -547,7 +459,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 (1,&(joint.position.position), &xnv);
         v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[3]->setPosition(v);
-        cout << "hand=" << v << endl;
+        //cout << "hand=" << v << endl;
     }
 
     else
@@ -589,54 +501,84 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
         mCamera->setPosition(mCamPresetPos[3]);
         mCamera->lookAt(mCamPresetLookAt[3]);
     }
-    else if (arg.key == OIS::KC_NUMPAD7)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("epaule_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD8)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("bras_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD9)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("avant_bras_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD6)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("poignet_");
-    }
-    else if (arg.key == OIS::KC_NUMPAD5)
-    {
-        mSelectedBone = mModel->getSkeleton()->getBone("main_");
-    }
     else if (arg.key == OIS::KC_I)
     {
-        mDebugYaw += 0.1;
+        mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
     }
     else if (arg.key == OIS::KC_K)
     {
-        mDebugYaw -= 0.1;
+        mProsthesis[mCurrentDisplayed]->dbgT.x -= 5;
     }
     else if (arg.key == OIS::KC_O)
     {
-        mDebugPitch += 0.1;
+        mProsthesis[mCurrentDisplayed]->dbgT.y += 5;
     }
     else if (arg.key == OIS::KC_L)
     {
-        mDebugPitch -= 0.1;
+        mProsthesis[mCurrentDisplayed]->dbgT.y -= 5;
     }
     else if (arg.key == OIS::KC_P)
     {
-        mDebugRoll += 0.1;
+        mProsthesis[mCurrentDisplayed]->dbgT.z += 5;
     }
     else if (arg.key == OIS::KC_M)
     {
-        mDebugRoll -= 0.1;
+        mProsthesis[mCurrentDisplayed]->dbgT.z -= 5;
+    }
+    else if (arg.key == OIS::KC_T)
+    {
+        mProsthesis[mCurrentDisplayed]->dbgYaw += 1;
+    }
+    else if (arg.key == OIS::KC_G)
+    {
+        mProsthesis[mCurrentDisplayed]->dbgYaw -= 1;
+    }
+    else if (arg.key == OIS::KC_Y)
+    {
+        mProsthesis[mCurrentDisplayed]->dbgPitch += 1;
+    }
+    else if (arg.key == OIS::KC_H)
+    {
+        mProsthesis[mCurrentDisplayed]->dbgPitch -= 1;
+    }
+    else if (arg.key == OIS::KC_U)
+    {
+        mProsthesis[mCurrentDisplayed]->dbgRoll += 1;
+    }
+    else if (arg.key == OIS::KC_J)
+    {
+        mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
+    }
+    else if (arg.key == OIS::KC_B)
+    {
+        mKinectOffsetY += 1;
+    }
+    else if (arg.key == OIS::KC_N)
+    {
+        mKinectOffsetY -= 1;
     }
     else if (arg.key == OIS::KC_C)
     {
-        mPointCloudEnt->setVisible(!mPointCloudEnt->getVisible());
+        mKinectScaleY +=0.01;
     }
+    else if (arg.key == OIS::KC_V)
+    {
+        mKinectScaleY -=0.01;
+    }
+    else if (arg.key == OIS::KC_SPACE)
+    {
+        mCurrentDisplayed = (mCurrentDisplayed+1)%3;
+    }
+    for(int i=0;i<3;i++)
+    {
+      mProsthesis[i]->hide();
+    }
+    mProsthesis[mCurrentDisplayed]->show();
+    cout << mKinectOffsetX << "\t";
+    cout << mKinectOffsetY << "\t";
+    cout << mKinectScaleX << "\t";
+    cout << mKinectScaleY << endl;
+    //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
     return BaseApplication::keyPressed(arg);
 }
 
@@ -714,7 +656,6 @@ int main(int argc, char *argv[])
     CHECK_RC(nRetVal, "Init Depth video input");
     app.mDepthGenerator.GetMetaData(app.mKinectDepth);
 
-
     printf("Starting to run\n");
     if(g_bNeedPose)
     {
@@ -725,11 +666,11 @@ int main(int argc, char *argv[])
 
     if(argc>1)
     {
-        app.setMeshFilename(argv[1]);
+        //app.setMeshFilename(argv[1]);
     }
     else
     {
-        app.setMeshFilename("bras_sans_smooth_III_2308..mesh");
+        //app.setMeshFilename("bras_sans_smooth_III_2308..mesh");
     }
 
     try {

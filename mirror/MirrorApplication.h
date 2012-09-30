@@ -12,6 +12,9 @@
 #include "pointcloud.h"
 #include "BaseApplication.h"
 
+#include <OgreTimer.h>
+#include "prosthesis.h"
+
 class MirrorApplication : public BaseApplication
 {
 public:
@@ -21,10 +24,13 @@ public:
     // Should be private and grouped with all the dirty globals in main
     xn::ImageMetaData mKinectVideo;
     xn::DepthMetaData mKinectDepth;
+    xn::SceneMetaData mKinectLabels;
     xn::DepthGenerator mDepthGenerator;
+
 
     bool mThreadRunning;
     bool mThreadQuit;
+    bool mThreadRanOnce;
     boost::thread * mThread;
     boost::mutex m_Mutex;
 
@@ -44,6 +50,9 @@ protected:
 
 
 private:
+    Prosthesis *mProsthesis[3];
+    int mCurrentDisplayed;
+
     Ogre::Entity * mModel;
     Ogre::SceneNode * mRootNode;
     Ogre::SceneNode * mModelNode;
@@ -66,6 +75,15 @@ private:
 
     double mDebugYaw, mDebugPitch, mDebugRoll;
 
+    Ogre::Timer mTimerSinceDetection;
+
+    double mKinectScaleX;
+    double mKinectScaleY;
+    double mKinectOffsetX;
+    double mKinectOffsetY;
+
+    // Hackity stuff
+    XnSkeletonJointTransformation mRightShoulderJoint;
 
 };
 

@@ -17,17 +17,27 @@ void MeshViewerApplication::createScene()
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
     Ogre::Light* light = mSceneMgr->createLight("MainLight");
     light->setPosition(20.0f, 80.0f, 50.0f);
-    mAnimationState = mModel->getAnimationState("default_skl");
+    //mAnimationState = mModel->getAnimationState("default_skl");
     //mAnimationState = mModel->getAnimationState("Walk");
-    mAnimationState->setLoop(true);
-    mAnimationState->setEnabled(true);
+    //mAnimationState->setLoop(true);
+    //mAnimationState->setEnabled(true);
 
 }
 
 bool MeshViewerApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
-    mAnimationState->addTime(evt.timeSinceLastFrame);
-    return BaseApplication::frameRenderingQueued(evt);
+  Ogre::Bone *bone;
+  static float dT = 0.0;
+  dT += 0.08;
+  bone = mModel->getSkeleton()->getBone("Bone007");
+  bone->setManuallyControlled(true);
+  bone->setInheritScale(false);
+  bone->resetToInitialState();
+  double s = cos(dT)*0.2+1.1;
+  bone->setScale(s,s,s);
+
+  //mAnimationState->addTime(evt.timeSinceLastFrame);
+  return BaseApplication::frameRenderingQueued(evt);
 }
 
 int main(int argc, char *argv[])
