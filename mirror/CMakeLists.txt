@@ -155,14 +155,16 @@ set(HDRS
 	./BaseApplication.h
 	./MirrorApplication.h
         ./pointcloud.h
-  ./prosthesis.h
+	./infoviz.h
+  	./prosthesis.h
 )
  
 set(SRCS
 	./BaseApplication.cpp
 	./MirrorApplication.cpp
         ./pointcloud.cpp
-  ./prosthesis.cpp
+	./infoviz.cpp
+  	./prosthesis.cpp
 )
  
 include_directories( ${OIS_INCLUDE_DIRS}

@@ -1,6 +1,7 @@
 // (c) Copyright 2012 Yves Quemener (quemener.yves@free.fr), Museolab
 
 #include "MirrorApplication.h"
+#include "infoviz.h"
 
 
 using namespace std;
@@ -242,6 +243,8 @@ void MirrorApplication::createScene()
     mRootNode->attachObject(mPointCloudEnt);
     mThreadRunning = true;
 
+    Infoviz * iz = new Infoviz("infoviz_1_material",0,1.0,1.0,-0.5);
+    iz->load(mSceneMgr);
     //mModelNode->setVisible(false);
 }
 

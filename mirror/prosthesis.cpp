@@ -122,7 +122,6 @@ void Prosthesis::updateAllJoints(unsigned long dt,
       bone->yaw(Ogre::Radian(Ogre::Degree(90)));
       bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
       bone->roll(Ogre::Radian(Ogre::Degree(-90)));
-
     }
     transformBone("bras", XN_SKEL_RIGHT_SHOULDER,user,true,true,false,true);
     transformBone("avant_bras", XN_SKEL_RIGHT_ELBOW,user,true,true,false,true);
