@@ -15,11 +15,29 @@
 #include <OgreTimer.h>
 #include "prosthesis.h"
 
+
+struct ScenarioElement{
+    // mesh filename for 3d obects, material name for infoviz
+    std::string name;
+    // type : 0 : infoviz 1-3 : prosthesis of the corresponding type
+    int type;
+    // Used only for infoviz
+    Ogre::Vector3 pos;
+    float width,height;
+    // time in seconds before appearing after user detection
+    float startTime;
+    float fadeInDuration;
+    // How long will it be displayed
+    float playDuration;
+    float fadeoutDuration;
+};
+
 class MirrorApplication : public BaseApplication
 {
 public:
     MirrorApplication();
     void setMeshFilename(std::string filename) {mMeshFilename=filename;}
+    void readScenario(std::string filename);
 
     // Should be private and grouped with all the dirty globals in main
     xn::ImageMetaData mKinectVideo;
@@ -81,6 +99,8 @@ private:
     double mKinectScaleY;
     double mKinectOffsetX;
     double mKinectOffsetY;
+
+    std::vector<ScenarioElement> mScenario;
 
     // Hackity stuff
     XnSkeletonJointTransformation mRightShoulderJoint;

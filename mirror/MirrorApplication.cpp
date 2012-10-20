@@ -2,10 +2,13 @@
 
 #include "MirrorApplication.h"
 #include "infoviz.h"
+#include <vector>
+#include <fstream>
 
 
 using namespace std;
 using namespace Ogre;
+
 
 //---------------------------------------------------------------------------
 // Globals
@@ -585,7 +588,25 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     return BaseApplication::keyPressed(arg);
 }
 
-
+void MirrorApplication::readScenario(string filename)
+{
+    std::ifstream input;
+    input.open(filename.c_str(), std::ios_base::in);
+    ScenarioElement se;
+    mScenario.clear();
+    while(!input.eof())
+    {
+        input >> se.name;
+        input >> se.type;
+        input >> se.pos.x >> se.pos.y >> se.pos.z;
+        input >> se.width >> se.height;
+        input >> se.startTime;
+        input >> se.fadeInDuration;
+        input >> se.playDuration;
+        input >> se.fadeoutDuration;
+        mScenario.push_back(se);
+    }
+}
 
 int main(int argc, char *argv[])
 {

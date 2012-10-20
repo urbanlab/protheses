@@ -59,6 +59,13 @@ bool Prosthesis::transformBone(std::string boneName,
     bone->setPosition(mTransf.inverse() * v);
   }
   mTransf = mNode->_getFullTransform() * bone->_getFullTransform();
+
+  Ogre::Material *mat;
+  /*mat = mEntity->getSubEntity(0)->getMaterial().getPointer();
+  mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+  mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+  mat->getTechnique(0)->getPass(0)->setDiffuse(Ogre::ColourValue(1,1,1,0.5));
+*/
   return retVal;
 }
 
