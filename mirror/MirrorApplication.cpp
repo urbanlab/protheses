@@ -431,11 +431,9 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
       xn::SkeletonCapability sc = g_UserGenerator.GetSkeletonCap();
 
-      dT = dT + 0.01;
+      dT = dT + evt.timeSinceLastFrame;
       for(int i=0;i<mScenario.size();i++)
       {
-          std::cout << dT << "\t" << i
-                    << "\t" << mScenario[i].type << std::endl;
           mScenario[i].fader->update(dT);
           if((mScenario[i].type>0)&&
              (mScenario[i].startTime<dT)&&
@@ -447,7 +445,6 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
           }
       }
-      std::cout << std::endl;
 
 
         XnSkeletonJointTransformation joint;

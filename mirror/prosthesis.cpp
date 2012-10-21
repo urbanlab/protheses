@@ -91,7 +91,14 @@ void Prosthesis::update(float dT)
         mat = mEntity->getSubEntity(i)->getMaterial().getPointer();
         mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
         mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
-        mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
+        if(mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates()>0)
+            mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
+        else
+        {
+            Ogre::ColourValue cv=mat->getTechnique(0)->getPass(0)->getDiffuse();
+            cv.a = alpha;
+            mat->setDiffuse(cv);
+        }
     }
 }
 
