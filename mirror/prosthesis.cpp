@@ -86,7 +86,6 @@ void Prosthesis::update(float dT)
         alpha=1.0;
     }
 
-    std::cout << alpha << std::endl;
     for(int i=0;i<mEntity->getNumSubEntities();i++)
     {
         mat = mEntity->getSubEntity(i)->getMaterial().getPointer();

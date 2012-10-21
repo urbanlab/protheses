@@ -178,7 +178,7 @@ void MirrorApplication::createScene()
     mCamPresetPos[3] = Vector3(-1200,-10,950);
     mCamPresetLookAt[3] = Vector3(0,0,950);
 
-    bool visible = true;
+    bool visible = false;
     mKinectNode[0] = mRootNode->createChildSceneNode("K1");
     mKinectNode[1] = mRootNode->createChildSceneNode("K2");
     mKinectNode[2] = mRootNode->createChildSceneNode("K3");
@@ -248,9 +248,6 @@ void MirrorApplication::createScene()
 
     mThreadRunning = true;
 
-    /*Infoviz * iz = new Infoviz("infoviz_1_material",0,1.0,1.0,-0.5);
-    iz->load(mSceneMgr);*/
-    //mModelNode->setVisible(false);
 }
 
 bool MirrorApplication::updateBone(std::string boneName,
@@ -449,8 +446,8 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     mTimerSinceDetection.getMilliseconds(),
                     &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
           }
-          std::cout << "done" << std::endl;
       }
+      std::cout << std::endl;
 
 
         XnSkeletonJointTransformation joint;
@@ -655,9 +652,10 @@ void MirrorApplication::readScenario(string filename)
         ss >> se.startTime >> se.fadeInDuration;
         ss >> se.playDuration;
         ss >> se.fadeoutDuration;
-        char dump[2];
+        if(!ss.rdbuf()->in_avail()) break;
+        /*char dump[2];
         ss >> dump;
-
+*/
         if(se.type==0)
         {
             Infoviz* iz = new Infoviz(se.name, se.pos.x, se.pos.y,

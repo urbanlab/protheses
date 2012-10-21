@@ -10,12 +10,13 @@ void Infoviz::load(Ogre::SceneManager *mgr)
 
     mNode = mgr->getRootSceneNode()->createChildSceneNode("Infoviz"+mFilename);
     mNode->attachObject(mRectangle);
+    this->hide();
 }
 
 void Infoviz::update(float dT)
 {
     Ogre::Material *mat;
-    if((dT<mStartTime)||(dT>mStartTime+mDuration))
+    if((dT<mStartTime)||(dT>mStartTime+mDuration+mFadeinDuration+mFadeoutDuration))
     {
         this->hide();
         return;
@@ -27,9 +28,13 @@ void Infoviz::update(float dT)
     {
         alpha = (dT-mStartTime)/mFadeinDuration;
     }
-    if(dT-mStartTime>mFadeoutDuration)
+    else if(dT-mStartTime-mDuration-mFadeinDuration<mFadeoutDuration)
     {
-        alpha = (dT-mStartTime-mDuration)/mFadeinDuration;
+        alpha = 1.0-(dT-mStartTime-mDuration-mFadeinDuration)/mFadeoutDuration;
+    }
+    else
+    {
+        alpha=1.0;
     }
 
     mat = mRectangle->getMaterial().getPointer();
