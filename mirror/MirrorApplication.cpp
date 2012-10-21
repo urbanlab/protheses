@@ -178,7 +178,7 @@ void MirrorApplication::createScene()
     mCamPresetPos[3] = Vector3(-1200,-10,950);
     mCamPresetLookAt[3] = Vector3(0,0,950);
 
-    bool visible = false;
+    bool visible = true;
     mKinectNode[0] = mRootNode->createChildSceneNode("K1");
     mKinectNode[1] = mRootNode->createChildSceneNode("K2");
     mKinectNode[2] = mRootNode->createChildSceneNode("K3");
@@ -224,14 +224,14 @@ void MirrorApplication::createScene()
     //mDebugNode[2]->lookAt(mModelNode->getPosition(), Ogre::Node::TS_WORLD);
 
 
-    mProsthesis[0] = new Prosthesis("coeur_scene_3008bras.mesh", 0, 1,1,20,1);
+    /*mProsthesis[0] = new Prosthesis("coeur_scene_3008bras.mesh", 0, 1,1,20,1);
     mProsthesis[1] = new Prosthesis("coeur_scene_3008Hose001.mesh", 0, 1,1,20,2);
     mProsthesis[2] = new Prosthesis("Coeur_I..mesh", 0, 1,1,20,3);
     mCurrentDisplayed=0;
 
     mProsthesis[0]->load(mSceneMgr);
     mProsthesis[1]->load(mSceneMgr);
-    mProsthesis[2]->load(mSceneMgr);
+    mProsthesis[2]->load(mSceneMgr);*/
 
 
     const int numpoints = 640*480;
@@ -244,10 +244,12 @@ void MirrorApplication::createScene()
     mPointCloudEnt->setMaterialName("Pointcloud");
 
     mRootNode->attachObject(mPointCloudEnt);
+    readScenario("scenario.cfg");
+
     mThreadRunning = true;
 
-    Infoviz * iz = new Infoviz("infoviz_1_material",0,1.0,1.0,-0.5);
-    iz->load(mSceneMgr);
+    /*Infoviz * iz = new Infoviz("infoviz_1_material",0,1.0,1.0,-0.5);
+    iz->load(mSceneMgr);*/
     //mModelNode->setVisible(false);
 }
 
@@ -382,7 +384,6 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     Bone* bone;
     static float dT=0.0;
-    dT = dT + 0.01;
 
     /*mModelNode->setPosition(0,0,0);
     bone = mModel->getSkeleton()->getBone("epaule_");
@@ -410,6 +411,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     g_UserGenerator.GetUsers(aUsers, nUsers);
 
     bool found=false;
+    bool static previousFound=false;
 
     for(XnUserID i=0; (i<nUsers)&&(!found); i++)
     {
@@ -422,19 +424,34 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
           mCurrentUserXn=i;
           //cout << "Found = "<<mCurrentUserXn<<endl;
           //cout << mTimerSinceDetection.getMilliseconds()<<endl;
+          if(!previousFound) dT=0.0f;
           found=true;
         }
     }
-
-
-
+    previousFound=found;
 
     if(found)
     {
       xn::SkeletonCapability sc = g_UserGenerator.GetSkeletonCap();
-      mProsthesis[mCurrentDisplayed]->updateAllJoints(
-            mTimerSinceDetection.getMilliseconds(),
-            &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
+
+      dT = dT + 0.01;
+      for(int i=0;i<mScenario.size();i++)
+      {
+          std::cout << dT << "\t" << i
+                    << "\t" << mScenario[i].type << std::endl;
+          mScenario[i].fader->update(dT);
+          if((mScenario[i].type>0)&&
+             (mScenario[i].startTime<dT)&&
+             (mScenario[i].startTime+mScenario[0].playDuration
+              +mScenario[0].fadeoutDuration+mScenario[0].fadeInDuration>dT))
+          {
+              ((Prosthesis*)(mScenario[i].fader))->updateAllJoints(
+                    mTimerSinceDetection.getMilliseconds(),
+                    &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
+          }
+          std::cout << "done" << std::endl;
+      }
+
 
         XnSkeletonJointTransformation joint;
         Vector3 v;
@@ -507,7 +524,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
         mCamera->setPosition(mCamPresetPos[3]);
         mCamera->lookAt(mCamPresetLookAt[3]);
     }
-    else if (arg.key == OIS::KC_I)
+    /*else if (arg.key == OIS::KC_I)
     {
         mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
     }
@@ -554,7 +571,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_J)
     {
         mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
-    }
+    }*/
     else if (arg.key == OIS::KC_B)
     {
         mKinectOffsetY += 1;
@@ -575,7 +592,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     {
         mCurrentDisplayed = (mCurrentDisplayed+1)%3;
     }
-    for(int i=0;i<3;i++)
+    /*for(int i=0;i<3;i++)
     {
       mProsthesis[i]->hide();
     }
@@ -584,8 +601,33 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     cout << mKinectOffsetY << "\t";
     cout << mKinectScaleX << "\t";
     cout << mKinectScaleY << endl;
-    //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
+    //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;*/
     return BaseApplication::keyPressed(arg);
+}
+
+void inline readElement(std::ifstream& is, std::string& s)
+{
+    do
+        is >> s;
+    while(s[0]=='#');
+}
+
+void inline readElement(std::ifstream& is, int& i)
+{
+    std::stringstream ss;
+    do
+        ss << is;
+    while(ss.str()[0]=='#');
+    ss >> i;
+}
+
+void inline readElement(std::ifstream& is, float& f)
+{
+    std::stringstream ss;
+    do
+        ss << is;
+    while(ss.str()[0]=='#');
+    ss >> f;
 }
 
 void MirrorApplication::readScenario(string filename)
@@ -594,16 +636,50 @@ void MirrorApplication::readScenario(string filename)
     input.open(filename.c_str(), std::ios_base::in);
     ScenarioElement se;
     mScenario.clear();
+
+    // Remove comments
+    char buf[1001];
+    std::stringstream ss;
     while(!input.eof())
     {
-        input >> se.name;
-        input >> se.type;
-        input >> se.pos.x >> se.pos.y >> se.pos.z;
-        input >> se.width >> se.height;
-        input >> se.startTime;
-        input >> se.fadeInDuration;
-        input >> se.playDuration;
-        input >> se.fadeoutDuration;
+        input.getline(buf,1000);
+        if(buf[0]=='#') continue;
+        ss << buf << '\n';
+    }
+    while(ss.rdbuf()->in_avail())
+    {
+        ss >> se.name;
+        ss >> se.type;
+        ss >> se.pos.x >> se.pos.y >> se.pos.z;
+        ss >> se.width >> se.height;
+        ss >> se.startTime >> se.fadeInDuration;
+        ss >> se.playDuration;
+        ss >> se.fadeoutDuration;
+        char dump[2];
+        ss >> dump;
+
+        if(se.type==0)
+        {
+            Infoviz* iz = new Infoviz(se.name, se.pos.x, se.pos.y,
+                                      se.width, se.height,
+                                      se.startTime,
+                                      se.fadeInDuration,
+                                      se.fadeoutDuration,
+                                      se.playDuration);
+            iz->load(this->mSceneMgr);
+            se.fader=iz;
+        }
+        else
+        {
+            Prosthesis* p=new Prosthesis(se.name, se.startTime,
+                                        se.fadeInDuration,
+                                        se.fadeoutDuration,
+                                        se.playDuration,
+                                        se.type);
+            p->load(this->mSceneMgr);
+            se.fader=p;
+        }
+
         mScenario.push_back(se);
     }
 }

@@ -30,6 +30,7 @@ struct ScenarioElement{
     // How long will it be displayed
     float playDuration;
     float fadeoutDuration;
+    Fader *fader;
 };
 
 class MirrorApplication : public BaseApplication

@@ -54,19 +54,46 @@ bool Prosthesis::transformBone(std::string boneName,
       bone->setOrientation(quat*qI);
       retVal=true;
   }
-  if((updatePosition)&&(joint.position.fConfidence>0.3f))
+  if((updatePosition)&&(joint.position.fConfidence>0.5f))
   {
     bone->setPosition(mTransf.inverse() * v);
   }
   mTransf = mNode->_getFullTransform() * bone->_getFullTransform();
-
-  Ogre::Material *mat;
-  /*mat = mEntity->getSubEntity(0)->getMaterial().getPointer();
-  mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-  mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
-  mat->getTechnique(0)->getPass(0)->setDiffuse(Ogre::ColourValue(1,1,1,0.5));
-*/
   return retVal;
+}
+
+void Prosthesis::update(float dT)
+{
+    Ogre::Material *mat;
+    if((dT<mStartTime)||(dT>mStartTime+mDuration+mFadeinDuration+mFadeoutDuration))
+    {
+        this->hide();
+        return;
+    }
+    this->show();
+
+    float alpha;
+    if(dT-mStartTime<mFadeinDuration)
+    {
+        alpha = (dT-mStartTime)/mFadeinDuration;
+    }
+    else if(dT-mStartTime-mDuration-mFadeinDuration<mFadeoutDuration)
+    {
+        alpha = 1.0-(dT-mStartTime-mDuration-mFadeinDuration)/mFadeoutDuration;
+    }
+    else
+    {
+        alpha=1.0;
+    }
+
+    std::cout << alpha << std::endl;
+    for(int i=0;i<mEntity->getNumSubEntities();i++)
+    {
+        mat = mEntity->getSubEntity(i)->getMaterial().getPointer();
+        mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+        mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+        mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
+    }
 }
 
 void Prosthesis::updateAllJoints(unsigned long dt,

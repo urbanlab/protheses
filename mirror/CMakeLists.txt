@@ -263,6 +263,7 @@ if(UNIX)
 	install(FILES ${CMAKE_SOURCE_DIR}/cfg/plugins.cfg
 		${CMAKE_SOURCE_DIR}/cfg/resources.cfg
 		${CMAKE_SOURCE_DIR}/cfg/ogre.cfg
+		${CMAKE_SOURCE_DIR}/cfg/scenario.cfg
 		DESTINATION bin
 		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
