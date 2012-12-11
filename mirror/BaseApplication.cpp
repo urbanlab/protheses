@@ -101,9 +101,9 @@ void BaseApplication::createFrameListener(void)
     pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
 
     // uncomment for easier debugging
-    /*
+
     pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
-    pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));*/
+    pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
     pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
 
     mInputManager = OIS::InputManager::createInputSystem( pl );

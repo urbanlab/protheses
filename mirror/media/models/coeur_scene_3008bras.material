@@ -1,0 +1,18 @@
+material coeur_scene_3008Peau
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture skin_cuir.jpg
+			}
+		}
+
+	}
+}

@@ -54,12 +54,52 @@ bool Prosthesis::transformBone(std::string boneName,
       bone->setOrientation(quat*qI);
       retVal=true;
   }
-  if((updatePosition)&&(joint.position.fConfidence>0.3f))
+  if((updatePosition)&&(joint.position.fConfidence>0.5f))
   {
     bone->setPosition(mTransf.inverse() * v);
   }
   mTransf = mNode->_getFullTransform() * bone->_getFullTransform();
   return retVal;
+}
+
+void Prosthesis::update(float dT)
+{
+    Ogre::Material *mat;
+    if((dT<mStartTime)||(dT>mStartTime+mDuration+mFadeinDuration+mFadeoutDuration))
+    {
+        this->hide();
+        return;
+    }
+    this->show();
+
+    float alpha;
+    if(dT-mStartTime<mFadeinDuration)
+    {
+        alpha = (dT-mStartTime)/mFadeinDuration;
+    }
+    else if(dT-mStartTime-mDuration-mFadeinDuration<mFadeoutDuration)
+    {
+        alpha = 1.0-(dT-mStartTime-mDuration-mFadeinDuration)/mFadeoutDuration;
+    }
+    else
+    {
+        alpha=1.0;
+    }
+
+    for(int i=0;i<mEntity->getNumSubEntities();i++)
+    {
+        mat = mEntity->getSubEntity(i)->getMaterial().getPointer();
+        mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+        mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+        if(mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates()>0)
+            mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
+        else
+        {
+            Ogre::ColourValue cv=mat->getTechnique(0)->getPass(0)->getDiffuse();
+            cv.a = alpha;
+            mat->setDiffuse(cv);
+        }
+    }
 }
 
 void Prosthesis::updateAllJoints(unsigned long dt,
@@ -122,7 +162,6 @@ void Prosthesis::updateAllJoints(unsigned long dt,
       bone->yaw(Ogre::Radian(Ogre::Degree(90)));
       bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
       bone->roll(Ogre::Radian(Ogre::Degree(-90)));
-
     }
     transformBone("bras", XN_SKEL_RIGHT_SHOULDER,user,true,true,false,true);
     transformBone("avant_bras", XN_SKEL_RIGHT_ELBOW,user,true,true,false,true);

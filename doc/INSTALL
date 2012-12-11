@@ -50,7 +50,7 @@ Le renderer utilise une version compilée depuis les sources de la librairie Ogr
 http://www.ogre3d.org/download/source
 
 Elle vient avec un grand nombre de dépendances, voici une liste de celles qui m'ont manqué lors de l'install initiale. Cette liste n'est certainement pas exhaustive :
-libois-dev libxmu-dev libzzip-dev libfreetype6-dev libxaw7-dev libfreeimage-dev
+libois-dev libxmu-dev libzzip-dev libfreetype6-dev libxaw7-dev libfreeimage-dev libxrandr-dev libboost-all-dev
 
 L'installation de Ogre3D doit être faite dans le répertoire par défaut : /usr/local
 

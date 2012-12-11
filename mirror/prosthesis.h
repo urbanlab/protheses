@@ -9,15 +9,15 @@
 #include <OgreMatrix3.h>
 #include <OgreSubEntity.h>
 #include <OgreMaterial.h>
-
+#include "fader.h"
 #include <XnCppWrapper.h>
 
-class Prosthesis
+class Prosthesis : public Fader
 {
 private:
   double mStartTime;
-  double mFadeinSpeed;
-  double mFadeoutSpeed;
+  double mFadeinDuration;
+  double mFadeoutDuration;
   double mDuration;
   int mType;
   std::string mFilename;
@@ -32,8 +32,8 @@ private:
 public:
     Prosthesis(std::string name, double start, double fid, double fos,
                double duration ,int  type) :
-      mFilename(name), mStartTime(start), mFadeinSpeed(fid),
-      mFadeoutSpeed(fos), mDuration(duration), mType(type)
+      mFilename(name), mStartTime(start), mFadeinDuration(fid),
+      mFadeoutDuration(fos), mDuration(duration), mType(type)
     {
       dbgT = Ogre::Vector3(-5, -120, 3);
       dbgYaw = 160.0;
@@ -49,6 +49,7 @@ public:
                        bool inheritOrientation,
                        bool updatePosition,
                        bool updateOrientation);
+    void update(float dT);
 
     void show();
     void hide();

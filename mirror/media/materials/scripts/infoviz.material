@@ -1,0 +1,38 @@
+material infoviz_1_material
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture infoviz-1.png
+			}
+		}
+
+	}
+}
+
+material infoviz_2_material
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture infoviz-2.jpg
+			}
+		}
+
+	}
+}
+

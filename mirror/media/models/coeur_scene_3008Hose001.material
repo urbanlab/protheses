@@ -1,0 +1,113 @@
+material coeur_scene_3008Material_#14
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture metalscratches.jpg
+			}
+		}
+
+	}
+}
+
+material coeur_scene_3008Material_#15
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture metalscratches.jpg
+			}
+		}
+
+	}
+}
+
+material coeur_scene_3008Material_#16
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture metalscratches.jpg
+			}
+		}
+
+	}
+}
+
+material coeur_scene_3008Material_#17
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture metalscratches.jpg
+			}
+		}
+
+	}
+}
+
+material coeur_scene_3008Material_#18
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture metalscratches.jpg
+			}
+		}
+
+	}
+}
+
+material coeur_scene_3008Material_#19
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.468 0.468 0.468 1 27
+
+			texture_unit
+			{
+				texture metalscratches.jpg
+			}
+		}
+
+	}
+}
