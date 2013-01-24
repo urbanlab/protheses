@@ -102,6 +102,7 @@ private:
     double mKinectOffsetY;
 
     std::vector<ScenarioElement> mScenario;
+    float mScenarioLoopTime;
 
     // Hackity stuff
     XnSkeletonJointTransformation mRightShoulderJoint;

@@ -432,6 +432,7 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
       xn::SkeletonCapability sc = g_UserGenerator.GetSkeletonCap();
 
       dT = dT + evt.timeSinceLastFrame;
+      if((dT>mScenarioLoopTime)&&(mScenarioLoopTime>0.0f)) dT=0.0;
       for(int i=0;i<mScenario.size();i++)
       {
           mScenario[i].fader->update(dT);
@@ -640,6 +641,7 @@ void MirrorApplication::readScenario(string filename)
         if(buf[0]=='#') continue;
         ss << buf << '\n';
     }
+    ss >> mScenarioLoopTime;
     while(ss.rdbuf()->in_avail())
     {
         ss >> se.name;
