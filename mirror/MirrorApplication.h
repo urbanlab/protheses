@@ -62,6 +62,11 @@ protected:
     virtual bool keyPressed( const OIS::KeyEvent &arg );
     virtual void createFrameListener(void);
     virtual void destroyScene(void);
+
+    virtual bool mouseMoved( const OIS::MouseEvent &arg );
+    virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+    virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+
     void updateKinectCloud();
     void kinectThread();
 
@@ -103,6 +108,9 @@ private:
 
     std::vector<ScenarioElement> mScenario;
     float mScenarioLoopTime;
+    bool mCfgKeyboardControl;
+    bool mCfgMouseControl;
+    bool mCfgDisplayDebug;
 
     // Hackity stuff
     XnSkeletonJointTransformation mRightShoulderJoint;

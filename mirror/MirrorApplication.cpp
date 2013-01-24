@@ -138,6 +138,12 @@ void MirrorApplication::createFrameListener(void)
 {
     BaseApplication::createFrameListener();
     mKeyboard->setEventCallback(this);
+    if(!mCfgDisplayDebug)
+    {
+      mTrayMgr->hideFrameStats();
+      mDetailsPanel->hide();
+    }
+
 }
 
 void MirrorApplication::createScene()
@@ -496,9 +502,33 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     return BaseApplication::frameRenderingQueued(evt);
 }
 
+bool MirrorApplication::mouseMoved( const OIS::MouseEvent &arg )
+{
+  if(mCfgMouseControl) return BaseApplication::mouseMoved(arg);
+}
+
+bool MirrorApplication::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+{
+  if(mCfgMouseControl) return BaseApplication::mousePressed(arg, id);
+}
+
+bool MirrorApplication::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+{
+  if(mCfgMouseControl) return BaseApplication::mouseReleased(arg, id);
+}
+
 
 bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
 {
+  if(!mCfgKeyboardControl)
+  {
+    if (arg.key == OIS::KC_ESCAPE)
+       {
+           mShutDown = true;
+       }
+    return false;
+  }
+
     if (arg.key == OIS::KC_NUMPAD0)
     {
         mCamera->setPosition(mCamPresetPos[0]);
@@ -641,7 +671,19 @@ void MirrorApplication::readScenario(string filename)
         if(buf[0]=='#') continue;
         ss << buf << '\n';
     }
+
     ss >> mScenarioLoopTime;
+    float px,py,pz;
+    ss >> px >> py >> pz;
+    mCamera->setPosition(px,py,pz);
+    int fakebool;
+    ss >> fakebool;
+    mCfgDisplayDebug=(fakebool!=0);
+    ss >> fakebool;
+    mCfgKeyboardControl=(fakebool!=0);
+    ss >> fakebool;
+    mCfgMouseControl=(fakebool!=0);
+
     while(ss.rdbuf()->in_avail())
     {
         ss >> se.name;
