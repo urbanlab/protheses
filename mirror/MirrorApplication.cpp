@@ -160,7 +160,7 @@ void MirrorApplication::createScene()
     mModel->setDisplaySkeleton(false);*/
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
-    mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.0,0.0,0.0));
+    mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.5,0.5,0.5));
 
     //AxisAlignedBox aabb = AxisAlignedBox(-10e10, -10e10, -10e10,
     //                                          10e10,  10e10,  10e10);
@@ -171,6 +171,7 @@ void MirrorApplication::createScene()
     //mCamera->setPosition(0,200,1400);
     mCamera->lookAt(0,-200,1400);
     mCamera->setPosition(0,-200,0);
+    mCamera->setFOVy(Radian(Degree(10.0)));
 
     mCamPresetPos[0] = Vector3(0,-200,0);
     mCamPresetLookAt[0] = Vector3(200,-200,1400);
@@ -676,6 +677,8 @@ void MirrorApplication::readScenario(string filename)
     float px,py,pz;
     ss >> px >> py >> pz;
     mCamera->setPosition(px,py,pz);
+    ss >> px >> py >> pz;
+    mCamera->lookAt(px,py,pz);
     int fakebool;
     ss >> fakebool;
     mCfgDisplayDebug=(fakebool!=0);
