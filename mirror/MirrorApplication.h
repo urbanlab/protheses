@@ -74,7 +74,7 @@ protected:
 
 
 private:
-    Prosthesis *mProsthesis[3];
+    std::vector<Prosthesis*> mProsthesis;
     int mCurrentDisplayed;
 
     Ogre::Entity * mModel;
@@ -94,6 +94,7 @@ private:
 
     Ogre::Entity * mPointCloudEnt;
     PointCloud * mPointCloud;
+    Ogre::SceneNode * mPointCloudNode;
     Ogre::Entity * mDebugEnt[10];
     Ogre::SceneNode * mDebugNode[10];
 

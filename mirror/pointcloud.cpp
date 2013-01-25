@@ -77,7 +77,7 @@ void PointCloud::updateVertexPositions(int size, float *points)
    {
       pPArray[i] = points[i];
       pPArray[i+1] = points[i+1];
-      pPArray[i+2] = points[i+2];
+      pPArray[i+2] = points[i+2]*0;
    }
    mVertBuf->unlock();
 }

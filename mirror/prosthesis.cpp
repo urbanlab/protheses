@@ -90,7 +90,6 @@ void Prosthesis::update(float dT)
       alpha=1.0;
       transparency=false;
   }
-  cout << alpha << endl;
 
   for(int i=0;i<mEntity->getNumSubEntities();i++)
   {
@@ -151,6 +150,9 @@ void Prosthesis::updateAllJoints(unsigned long dt,
 
   // Manage position and pose
   Ogre::Bone * bone;
+
+  mNode->setPosition(0,0,0);;
+
   mSkel = sc;
   mDepthGen = dg;
   mTransf = mNode->_getFullTransform();
@@ -203,6 +205,7 @@ void Prosthesis::updateAllJoints(unsigned long dt,
     bone->setManuallyControlled(true);
     bone->setInheritScale(false);
   }
+  mNode->setPosition(dbgT);
 }
 
 void Prosthesis::hide()

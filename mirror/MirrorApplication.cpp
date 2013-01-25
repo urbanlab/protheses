@@ -171,7 +171,7 @@ void MirrorApplication::createScene()
     //mCamera->setPosition(0,200,1400);
     mCamera->lookAt(0,-200,1400);
     mCamera->setPosition(0,-200,0);
-    mCamera->setFOVy(Radian(Degree(10.0)));
+    mCamera->setFOVy(Radian(Degree(48.9)));
 
     mCamPresetPos[0] = Vector3(0,-200,0);
     mCamPresetLookAt[0] = Vector3(200,-200,1400);
@@ -249,8 +249,9 @@ void MirrorApplication::createScene()
 
     mPointCloudEnt = mSceneMgr->createEntity("KinectCloudEnt", "KinectCloud");
     mPointCloudEnt->setMaterialName("Pointcloud");
-
-    mRootNode->attachObject(mPointCloudEnt);
+    mPointCloudNode = mRootNode->createChildSceneNode("KinectCouldNode");
+    mPointCloudNode->attachObject(mPointCloudEnt);
+    mPointCloudNode->setPosition(-320,240,500);
     readScenario("scenario.cfg");
 
     mThreadRunning = true;
@@ -551,31 +552,55 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
       mCamera->setPosition(mCamPresetPos[3]);
       mCamera->lookAt(mCamPresetLookAt[3]);
   }
-  /*else if (arg.key == OIS::KC_I)
+  else if (arg.key == OIS::KC_I)
   {
-      mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
+    mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
   }
   else if (arg.key == OIS::KC_K)
   {
-      mProsthesis[mCurrentDisplayed]->dbgT.x -= 5;
+    mProsthesis[mCurrentDisplayed]->dbgT.x -= 5;
   }
   else if (arg.key == OIS::KC_O)
   {
-      mProsthesis[mCurrentDisplayed]->dbgT.y += 5;
+    mProsthesis[mCurrentDisplayed]->dbgT.y += 5;
   }
   else if (arg.key == OIS::KC_L)
   {
-      mProsthesis[mCurrentDisplayed]->dbgT.y -= 5;
+    mProsthesis[mCurrentDisplayed]->dbgT.y -= 5;
   }
   else if (arg.key == OIS::KC_P)
   {
-      mProsthesis[mCurrentDisplayed]->dbgT.z += 5;
+    mProsthesis[mCurrentDisplayed]->dbgT.z += 5;
   }
   else if (arg.key == OIS::KC_M)
   {
-      mProsthesis[mCurrentDisplayed]->dbgT.z -= 5;
+    mProsthesis[mCurrentDisplayed]->dbgT.z -= 5;
   }
-  else if (arg.key == OIS::KC_T)
+  else if (arg.key == OIS::KC_A)
+  {
+    Radian r = mCamera->getFOVy();
+    r*=1.05;
+    mCamera->setFOVy(r);
+  }
+  else if (arg.key == OIS::KC_Q)
+  {
+    Radian r = mCamera->getFOVy();
+    r*=0.95;
+    mCamera->setFOVy(r);
+  }
+  else if (arg.key == OIS::KC_Z)
+  {
+    Vector3 v = mPointCloudNode->getPosition();
+    v.z*=1.05;
+    mPointCloudNode->setPosition(v);
+  }
+  else if (arg.key == OIS::KC_S)
+  {
+    Vector3 v = mPointCloudNode->getPosition();
+    v.z*=0.95;
+    mPointCloudNode->setPosition(v);
+  }
+  /*else if (arg.key == OIS::KC_T)
   {
       mProsthesis[mCurrentDisplayed]->dbgYaw += 1;
   }
@@ -642,7 +667,11 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   }
   else if (arg.key == OIS::KC_SPACE)
   {
-      mCurrentDisplayed = (mCurrentDisplayed+1)%3;
+      mCurrentDisplayed = (mCurrentDisplayed+1)%mProsthesis.size();
+  }
+  else
+  {
+    return BaseApplication::keyPressed(arg);
   }
   /*for(int i=0;i<3;i++)
   {
@@ -656,8 +685,10 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     cout << mKinectScaleX << "\t";
     cout << mKinectScaleY << endl;
   }
-  //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
-  return BaseApplication::keyPressed(arg);
+  cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
+  cout << "Fov Y = " << Degree(mCamera->getFOVy());
+  cout << "\t Point cloud distance = " << mPointCloudNode->getPosition().z << endl;
+  return true;
 }
 
 void inline readElement(std::ifstream& is, std::string& s)
@@ -749,6 +780,7 @@ void MirrorApplication::readScenario(string filename)
                                         se.playDuration,
                                         se.type);
             p->load(this->mSceneMgr);
+            mProsthesis.push_back(p);;
             se.fader=p;
         }
 
