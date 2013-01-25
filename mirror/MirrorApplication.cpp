@@ -524,111 +524,140 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   if(!mCfgKeyboardControl)
   {
     if (arg.key == OIS::KC_ESCAPE)
-       {
-           mShutDown = true;
-       }
-    return false;
+    {
+       mShutDown = true;
+    }
+      return false;
+  }
+  bool kinectCalibChanged=false;
+
+  if (arg.key == OIS::KC_NUMPAD0)
+  {
+      mCamera->setPosition(mCamPresetPos[0]);
+      mCamera->lookAt(mCamPresetLookAt[0]);
+  }
+  else if (arg.key == OIS::KC_NUMPAD1)
+  {
+      mCamera->setPosition(mCamPresetPos[1]);
+      mCamera->lookAt(mCamPresetLookAt[1]);
+  }
+  else if (arg.key == OIS::KC_NUMPAD2)
+  {
+      mCamera->setPosition(mCamPresetPos[2]);
+      mCamera->lookAt(mCamPresetLookAt[2]);
+  }
+  else if (arg.key == OIS::KC_NUMPAD3)
+  {
+      mCamera->setPosition(mCamPresetPos[3]);
+      mCamera->lookAt(mCamPresetLookAt[3]);
+  }
+  /*else if (arg.key == OIS::KC_I)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
+  }
+  else if (arg.key == OIS::KC_K)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgT.x -= 5;
+  }
+  else if (arg.key == OIS::KC_O)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgT.y += 5;
+  }
+  else if (arg.key == OIS::KC_L)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgT.y -= 5;
+  }
+  else if (arg.key == OIS::KC_P)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgT.z += 5;
+  }
+  else if (arg.key == OIS::KC_M)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgT.z -= 5;
+  }
+  else if (arg.key == OIS::KC_T)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgYaw += 1;
+  }
+  else if (arg.key == OIS::KC_G)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgYaw -= 1;
+  }
+  else if (arg.key == OIS::KC_Y)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgPitch += 1;
+  }
+  else if (arg.key == OIS::KC_H)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgPitch -= 1;
+  }
+  else if (arg.key == OIS::KC_U)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgRoll += 1;
+  }
+  else if (arg.key == OIS::KC_J)
+  {
+      mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
+  }*/
+  else if (arg.key == OIS::KC_B)
+  {
+      mKinectOffsetY += 1;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_N)
+  {
+      mKinectOffsetY -= 1;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_C)
+  {
+      mKinectScaleY +=0.01;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_V)
+  {
+      mKinectScaleY -=0.01;
+      kinectCalibChanged=true;
   }
 
-    if (arg.key == OIS::KC_NUMPAD0)
-    {
-        mCamera->setPosition(mCamPresetPos[0]);
-        mCamera->lookAt(mCamPresetLookAt[0]);
-    }
-    else if (arg.key == OIS::KC_NUMPAD1)
-    {
-        mCamera->setPosition(mCamPresetPos[1]);
-        mCamera->lookAt(mCamPresetLookAt[1]);
-    }
-    else if (arg.key == OIS::KC_NUMPAD2)
-    {
-        mCamera->setPosition(mCamPresetPos[2]);
-        mCamera->lookAt(mCamPresetLookAt[2]);
-    }
-    else if (arg.key == OIS::KC_NUMPAD3)
-    {
-        mCamera->setPosition(mCamPresetPos[3]);
-        mCamera->lookAt(mCamPresetLookAt[3]);
-    }
-    /*else if (arg.key == OIS::KC_I)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgT.x += 5;
-    }
-    else if (arg.key == OIS::KC_K)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgT.x -= 5;
-    }
-    else if (arg.key == OIS::KC_O)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgT.y += 5;
-    }
-    else if (arg.key == OIS::KC_L)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgT.y -= 5;
-    }
-    else if (arg.key == OIS::KC_P)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgT.z += 5;
-    }
-    else if (arg.key == OIS::KC_M)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgT.z -= 5;
-    }
-    else if (arg.key == OIS::KC_T)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgYaw += 1;
-    }
-    else if (arg.key == OIS::KC_G)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgYaw -= 1;
-    }
-    else if (arg.key == OIS::KC_Y)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgPitch += 1;
-    }
-    else if (arg.key == OIS::KC_H)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgPitch -= 1;
-    }
-    else if (arg.key == OIS::KC_U)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgRoll += 1;
-    }
-    else if (arg.key == OIS::KC_J)
-    {
-        mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
-    }*/
-    else if (arg.key == OIS::KC_B)
-    {
-        mKinectOffsetY += 1;
-    }
-    else if (arg.key == OIS::KC_N)
-    {
-        mKinectOffsetY -= 1;
-    }
-    else if (arg.key == OIS::KC_C)
-    {
-        mKinectScaleY +=0.01;
-    }
-    else if (arg.key == OIS::KC_V)
-    {
-        mKinectScaleY -=0.01;
-    }
-    else if (arg.key == OIS::KC_SPACE)
-    {
-        mCurrentDisplayed = (mCurrentDisplayed+1)%3;
-    }
-    /*for(int i=0;i<3;i++)
-    {
-      mProsthesis[i]->hide();
-    }
-    mProsthesis[mCurrentDisplayed]->show();
+  else if (arg.key == OIS::KC_H)
+  {
+      mKinectOffsetX += 1;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_J)
+  {
+      mKinectOffsetX -= 1;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_F)
+  {
+      mKinectScaleX +=0.01;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_G)
+  {
+      mKinectScaleX -=0.01;
+      kinectCalibChanged=true;
+  }
+  else if (arg.key == OIS::KC_SPACE)
+  {
+      mCurrentDisplayed = (mCurrentDisplayed+1)%3;
+  }
+  /*for(int i=0;i<3;i++)
+  {
+    mProsthesis[i]->hide();
+  }
+  mProsthesis[mCurrentDisplayed]->show();*/
+  if(kinectCalibChanged)
+  {
     cout << mKinectOffsetX << "\t";
     cout << mKinectOffsetY << "\t";
     cout << mKinectScaleX << "\t";
     cout << mKinectScaleY << endl;
-    //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;*/
-    return BaseApplication::keyPressed(arg);
+  }
+  //cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
+  return BaseApplication::keyPressed(arg);
 }
 
 void inline readElement(std::ifstream& is, std::string& s)
@@ -679,6 +708,7 @@ void MirrorApplication::readScenario(string filename)
     mCamera->setPosition(px,py,pz);
     ss >> px >> py >> pz;
     mCamera->lookAt(px,py,pz);
+    ss >> mKinectOffsetX >> mKinectOffsetY >> mKinectScaleX >> mKinectScaleY;
     int fakebool;
     ss >> fakebool;
     mCfgDisplayDebug=(fakebool!=0);
