@@ -64,42 +64,62 @@ bool Prosthesis::transformBone(std::string boneName,
 
 void Prosthesis::update(float dT)
 {
-    Ogre::Material *mat;
-    if((dT<mStartTime)||(dT>mStartTime+mDuration+mFadeinDuration+mFadeoutDuration))
-    {
-        this->hide();
-        return;
-    }
-    this->show();
+  Ogre::Material *mat;
+  if((dT<mStartTime)||(dT>mStartTime+mDuration+mFadeinDuration+mFadeoutDuration))
+  {
+      this->hide();
+      return;
+  }
+  this->show();
 
-    float alpha;
-    if(dT-mStartTime<mFadeinDuration)
+  float alpha;
+  bool transparency=true;
+  if(dT-mStartTime<mFadeinDuration)
+  {
+      alpha = (dT-mStartTime)/mFadeinDuration;
+      transparency=true;
+  }
+  else if((dT-mStartTime-mDuration-mFadeinDuration<mFadeoutDuration)&&
+          (dT-mStartTime-mFadeinDuration>=mDuration))
+  {
+      alpha = 1.0-(dT-mStartTime-mDuration-mFadeinDuration)/mFadeoutDuration;
+      transparency=true;
+  }
+  else
+  {
+      alpha=1.0;
+      transparency=false;
+  }
+  cout << alpha << endl;
+
+  for(int i=0;i<mEntity->getNumSubEntities();i++)
+  {
+    if(transparency)
     {
-        alpha = (dT-mStartTime)/mFadeinDuration;
-    }
-    else if(dT-mStartTime-mDuration-mFadeinDuration<mFadeoutDuration)
-    {
-        alpha = 1.0-(dT-mStartTime-mDuration-mFadeinDuration)/mFadeoutDuration;
+      mat = mEntity->getSubEntity(i)->getMaterial().getPointer();
+      mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      mat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_CLOCKWISE);
+      mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
     }
     else
     {
-        alpha=1.0;
+      mat = mEntity->getSubEntity(i)->getMaterial().getPointer();
+      mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_REPLACE);
+      mat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+      mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(true);
     }
 
-    for(int i=0;i<mEntity->getNumSubEntities();i++)
+    if(mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates()>0)
     {
-        mat = mEntity->getSubEntity(i)->getMaterial().getPointer();
-        mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-        mat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
-        if(mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates()>0)
-            mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
-        else
-        {
-            Ogre::ColourValue cv=mat->getTechnique(0)->getPass(0)->getDiffuse();
-            cv.a = alpha;
-            mat->setDiffuse(cv);
-        }
+          mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
     }
+    else
+    {
+      Ogre::ColourValue cv=mat->getTechnique(0)->getPass(0)->getDiffuse();
+      cv.a = alpha;
+      mat->setDiffuse(cv);
+    }
+  }
 }
 
 void Prosthesis::updateAllJoints(unsigned long dt,
