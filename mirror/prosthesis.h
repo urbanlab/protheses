@@ -35,10 +35,14 @@ public:
       mFilename(name), mStartTime(start), mFadeinDuration(fid),
       mFadeoutDuration(fos), mDuration(duration), mType(type)
     {
-      dbgT = Ogre::Vector3(-5, -120, 3);
+      //dbgT = Ogre::Vector3(-5, -120, 3);
+      //dbgT = Ogre::Vector3(-235,335,2.0);
+      dbgT = Ogre::Vector3(0,0,0);
       dbgYaw = 160.0;
       dbgPitch = -12.0;
       dbgRoll = 98.0;
+      scaleFactor = 1.0;
+      kinectZCorrection = 1.0f;
     }
     void load(Ogre::SceneManager* mgr);
     void updateAllJoints(unsigned long dt, xn::SkeletonCapability* sc,
@@ -57,6 +61,8 @@ public:
     double dbgYaw;
     double dbgPitch;
     double dbgRoll;
+    double scaleFactor;
+    double kinectZCorrection;
 };
 
 #endif // PROSTHESIS_H

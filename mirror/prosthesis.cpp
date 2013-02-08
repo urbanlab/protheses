@@ -3,6 +3,13 @@
 
 using namespace std;
 
+void correctKinectError(XnPoint3D &v)
+{
+  float f = 2e-3f * v.Z;
+  v.X = 320 + (v.X - 320) * f;
+  v.Y = 240 + (v.Y - 240) * f;
+}
+
 void Prosthesis::load(Ogre::SceneManager * mgr)
 {
   Ogre::SceneNode * rootNode;
@@ -35,10 +42,13 @@ bool Prosthesis::transformBone(std::string boneName,
   bone->setManuallyControlled(true);
   bone->setInheritOrientation(inheritOrientation);
   bone->setInheritScale(inheritsScale);
+  //bone->setScale(scaleFactor, scaleFactor, scaleFactor);
 
   mSkel->GetSkeletonJoint(userId, jointName,joint);
   mDepthGen->ConvertRealWorldToProjective(1,&(joint.position.position), &xnv);
+  correctKinectError(xnv);
   v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
+  //cout << boneName << " : " << v << endl;
   if((updateOrientation)&&(joint.orientation.fConfidence>0.5f))
   {
      bone->resetToInitialState();
@@ -161,8 +171,8 @@ void Prosthesis::updateAllJoints(unsigned long dt,
     bone = mEntity->getSkeleton()->getBone("epaule_");
     if(transformBone("epaule_", XN_SKEL_NECK, user, false, false,true, true))
     {
-      bone->setScale(500,500,500);
-      bone->translate(Ogre::Vector3(-5, 50, 33), Ogre::Node::TS_LOCAL);
+      bone->setScale(1000*scaleFactor, 1000*scaleFactor, 1000*scaleFactor);
+      bone->translate(Ogre::Vector3(-235, 335, 0), Ogre::Node::TS_LOCAL);
       //bone->translate(dbgT, Ogre::Node::TS_LOCAL);
 
       bone->yaw(Ogre::Radian(Ogre::Degree(90)));
@@ -179,8 +189,8 @@ void Prosthesis::updateAllJoints(unsigned long dt,
     bone = mEntity->getSkeleton()->getBone("epaule_");
     if(transformBone("epaule_", XN_SKEL_NECK, user, false, false,true, true))
     {
-      bone->setScale(500,500,500);
-      bone->translate(Ogre::Vector3(55, 10, 23), Ogre::Node::TS_LOCAL);
+      bone->setScale(1000*scaleFactor, 1000*scaleFactor, 1000*scaleFactor);
+      bone->translate(Ogre::Vector3(-110, 335, 0), Ogre::Node::TS_LOCAL);
       bone->yaw(Ogre::Radian(Ogre::Degree(90)));
       bone->pitch(Ogre::Radian(Ogre::Degree(-51)));
       bone->roll(Ogre::Radian(Ogre::Degree(-90)));
@@ -194,14 +204,17 @@ void Prosthesis::updateAllJoints(unsigned long dt,
     if(transformBone("Bone001", XN_SKEL_NECK, user, false, false,true, true))
     {
       bone = mEntity->getSkeleton()->getBone("Bone001");
-      bone->translate(Ogre::Vector3(-5, -120, 3), Ogre::Node::TS_LOCAL);
+      bone->translate(Ogre::Vector3(-285, 110, 3), Ogre::Node::TS_LOCAL);
+      //bone->translate(dbgT, Ogre::Node::TS_LOCAL);
       bone->yaw(Ogre::Radian(Ogre::Degree(160)));
       bone->pitch(Ogre::Radian(Ogre::Degree(-12)));
       bone->roll(Ogre::Radian(Ogre::Degree(98)));
     }
     bone = mEntity->getSkeleton()->getBone("Bone007");
     double s = cos(dt/500.0)*0.2+1.1;
+    s*=2.0;
     bone->setScale(s,s,s);
+    //bone->translate(dbgT, Ogre::Node::TS_LOCAL);
     bone->setManuallyControlled(true);
     bone->setInheritScale(false);
   }

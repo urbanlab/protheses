@@ -99,6 +99,7 @@ private:
     Ogre::SceneNode * mDebugNode[10];
 
     double mDebugYaw, mDebugPitch, mDebugRoll;
+    double mScaleFactor;
 
     Ogre::Timer mTimerSinceDetection;
 
@@ -106,6 +107,7 @@ private:
     double mKinectScaleY;
     double mKinectOffsetX;
     double mKinectOffsetY;
+
 
     std::vector<ScenarioElement> mScenario;
     float mScenarioLoopTime;

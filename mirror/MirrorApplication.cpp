@@ -121,6 +121,8 @@ MirrorApplication::MirrorApplication()
     mKinectScaleY = 0.86;
     mKinectOffsetX = 22.0;
     mKinectOffsetY = 49;
+    mScaleFactor = 1.0;
+    mCurrentDisplayed = 0;
 }
 
 void MirrorApplication::destroyScene(void)
@@ -578,15 +580,17 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   }
   else if (arg.key == OIS::KC_A)
   {
-    Radian r = mCamera->getFOVy();
+    /*Radian r = mCamera->getFOVy();
     r*=1.05;
-    mCamera->setFOVy(r);
+    mCamera->setFOVy(r);*/
+    mProsthesis[mCurrentDisplayed]->kinectZCorrection *= 1.05;
   }
   else if (arg.key == OIS::KC_Q)
   {
-    Radian r = mCamera->getFOVy();
+    /*Radian r = mCamera->getFOVy();
     r*=0.95;
-    mCamera->setFOVy(r);
+    mCamera->setFOVy(r);*/
+    mProsthesis[mCurrentDisplayed]->kinectZCorrection *= 0.95;
   }
   else if (arg.key == OIS::KC_Z)
   {
@@ -599,6 +603,26 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     Vector3 v = mPointCloudNode->getPosition();
     v.z*=0.95;
     mPointCloudNode->setPosition(v);
+  }
+ else if (arg.key == OIS::KC_E)
+  {
+    mProsthesis[mCurrentDisplayed]->scaleFactor *= 1.05;
+  }
+  else if (arg.key == OIS::KC_D)
+  {
+    mProsthesis[mCurrentDisplayed]->scaleFactor *= 0.95;
+  }
+  else if (arg.key == OIS::KC_R)
+  {
+    Radian r = mCamera->getFOVy();
+    r*=1.05;
+    mCamera->setFOVy(r);
+  }
+  else if (arg.key == OIS::KC_F)
+  {
+    Radian r = mCamera->getFOVy();
+    r*=0.95;
+    mCamera->setFOVy(r);
   }
   /*else if (arg.key == OIS::KC_T)
   {
@@ -624,7 +648,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   {
       mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
   }*/
-  else if (arg.key == OIS::KC_B)
+  /*else if (arg.key == OIS::KC_B)
   {
       mKinectOffsetY += 1;
       kinectCalibChanged=true;
@@ -664,7 +688,9 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   {
       mKinectScaleX -=0.01;
       kinectCalibChanged=true;
-  }
+  }*/
+
+
   else if (arg.key == OIS::KC_SPACE)
   {
       mCurrentDisplayed = (mCurrentDisplayed+1)%mProsthesis.size();
@@ -687,7 +713,9 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   }
   cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
   cout << "Fov Y = " << Degree(mCamera->getFOVy());
-  cout << "\t Point cloud distance = " << mPointCloudNode->getPosition().z << endl;
+  cout << "\t Point cloud distance = " << mPointCloudNode->getPosition().z;
+  cout << "\t scale = " << mProsthesis[mCurrentDisplayed]->scaleFactor;
+  cout << "\t kinectZ correctioin :"<<mProsthesis[mCurrentDisplayed]->kinectZCorrection << endl;
   return true;
 }
 
