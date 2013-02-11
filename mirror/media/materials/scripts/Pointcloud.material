@@ -7,6 +7,7 @@ material Pointcloud
                         lighting off
                         depth_write off
                         diffuse vertexcolour
+			point_size 2.0
                 }
         }
 }
