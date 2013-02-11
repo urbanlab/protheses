@@ -120,6 +120,7 @@ private:
     // Keeps the modified shoulder position to remove a part of the point cloud
     // and replace it with the prosthesis
     XnSkeletonJointTransformation mRightShoulderJoint;
+    XnSkeletonJointTransformation mLeftShoulderJoint;
     XnSkeletonJointTransformation mRightHipJoint;
     // Indicated if we are in a part of the scenario where an arm should be hidden
     bool mHideArm;

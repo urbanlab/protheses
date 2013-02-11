@@ -353,20 +353,25 @@ void MirrorApplication::updateKinectCloud()
     }*/
 
 
-    XnPoint3D ptShoulder, ptHip;
-    ptShoulder = mRightShoulderJoint.position.position;
+    XnPoint3D ptShoulderR, ptShoulderL, ptHip;
+    ptShoulderR = mRightShoulderJoint.position.position;
+    ptShoulderL = mLeftShoulderJoint.position.position;
     ptHip = mRightHipJoint.position.position;
-    mDepthGenerator.ConvertRealWorldToProjective(1, &ptShoulder, &ptShoulder);
+    mDepthGenerator.ConvertRealWorldToProjective(1, &ptShoulderR, &ptShoulderR);
     mDepthGenerator.ConvertRealWorldToProjective(1, &ptHip, &ptHip);
+
+    float dx = ptShoulderR.X - ptHip.X;
+    float dy = ptShoulderR.Y - ptHip.Y;
+    float sFactor = sqrt(dx*dx+dy*dy);
 
     for(int j=0;j<480;j++)
     {
         for(int i=0;i<640;i++)
         {
           bool visible = true;
-          if((mHideArm)&&(i>ptShoulder.X+10)
-                       &&(j<ptHip.Y+80)
-                       &&(j>ptShoulder.Y-40))
+          if((mHideArm)&&(i>ptShoulderR.X+sFactor*0.1)
+                       &&(fabs(ptShoulderL.X-i)>sFactor*3)
+                       &&(j<ptHip.Y+sFactor*0.8))
             visible = false;
 
           unsigned int newIndex = mKinectOffsetX + i*mKinectScaleX +
@@ -543,6 +548,10 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         g_UserGenerator.GetSkeletonCap().
                 GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_HIP,joint);
         mRightHipJoint = joint;
+
+        g_UserGenerator.GetSkeletonCap().
+                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_LEFT_SHOULDER,joint);
+        mLeftShoulderJoint = joint;
     }
 
     else
