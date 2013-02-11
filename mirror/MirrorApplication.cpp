@@ -245,11 +245,16 @@ void MirrorApplication::createScene()
     mProsthesis[2]->load(mSceneMgr);*/
 
 
-    const int numpoints = 640*480;
-    float pointlist[numpoints*3];
-    float colorarray[numpoints*3];
+    const float ww = mWindow->getWidth();
+    const float wh = mWindow->getHeight();
+
+    const int numpoints = ww*wh;
+    float *pointlist = new float[numpoints*3];
+    float *colorarray = new float[numpoints*3];
     mPointCloud = new PointCloud("KinectCloud", "General",
                                     numpoints, pointlist, colorarray);
+    delete[] pointlist;
+    delete[] colorarray;
 
     mPointCloudEnt = mSceneMgr->createEntity("KinectCloudEnt", "KinectCloud");
     mPointCloudEnt->setMaterialName("Pointcloud");
@@ -329,9 +334,13 @@ void MirrorApplication::updateKinectCloud()
     // actually an uint16*
     const XnDepthPixel* videoDepth = mKinectDepth.Data();
     const XnLabel* labels = mKinectLabels.Data();
-    const int numpoints = 640*480;
-    static float pointlist[numpoints*3];
-    static float colorarray[numpoints*3];
+    const float ww = mWindow->getWidth();
+    float horf = 640.0f/ww;
+    const float wh = mWindow->getHeight();
+    float verf = 480.0f/wh;
+    int numpoints = ww*wh;
+    static float * pointlist=0;
+    static float * colorarray=0;
     int vindex=0;
     int cindex=0;
     int kindex=0;
@@ -339,6 +348,9 @@ void MirrorApplication::updateKinectCloud()
     dT+=0.04;
 
     if(!mThreadRanOnce) return;
+
+    if(pointlist==0) pointlist = new float[numpoints*3];
+    if(colorarray==0) colorarray = new float[numpoints*3];
 
 /*
     int pointwalker=0;
@@ -364,10 +376,13 @@ void MirrorApplication::updateKinectCloud()
     float dy = ptShoulderR.Y - ptHip.Y;
     float sFactor = sqrt(dx*dx+dy*dy);
 
-    for(int j=0;j<480;j++)
+    for(int jj=0;jj<wh;jj++)
     {
-        for(int i=0;i<640;i++)
+        for(int ii=0;ii<ww;ii++)
         {
+          int i=ii*horf;
+          int j=jj*verf;
+          kindex = i+j*640;
           bool visible = true;
           if((mHideArm)&&(i>ptShoulderR.X+sFactor*0.1)
                        &&(fabs(ptShoulderL.X-i)>sFactor*3)
@@ -378,14 +393,13 @@ void MirrorApplication::updateKinectCloud()
               640*(int)(mKinectOffsetY + j*mKinectScaleY);
           newIndex = newIndex % (640*480);
 
-          //if((labels[kindex]!=0)&&(visible))
-          if(true)
+          if((labels[kindex]!=0)&&(visible))
           {
             colorarray[cindex++]=(videoImage[newIndex].nBlue)/256.0;
             colorarray[cindex++]=(videoImage[newIndex].nGreen)/256.0;
             colorarray[cindex++]=(videoImage[newIndex].nRed)/256.0;
-            pointlist[vindex++]=i;
-            pointlist[vindex++]=-j;
+            pointlist[vindex++]=(float)(ii)*horf;
+            pointlist[vindex++]=-(float)(jj)*verf;
             pointlist[vindex++]=videoDepth[kindex];
           }
           else
@@ -397,47 +411,48 @@ void MirrorApplication::updateKinectCloud()
             pointlist[vindex++]=0;
             pointlist[vindex++]=0;
           }
-          kindex++;
         }
     }
 
+    cindex=0;
     if(mHighlightContour)
     {
-        for(int j=1;j<479;j++)
+        for(int jj=0;jj<wh;jj++)
         {
-            kindex = j*640 +1;
-            cindex = kindex*3;
-            for(int i=1;i<639;i++)
+            for(int ii=0;ii<ww;ii++)
             {
+                int i=ii*horf;
+                int j=jj*verf;
+                kindex = i+j*640;
 
-              if(labels[kindex]!=0)
-              {
-                 if((labels[kindex-1]==0)||(labels[kindex+1]==0)
-                   ||(labels[kindex+640]==0)||(labels[kindex-640]==0))
-                  {
-                    colorarray[cindex++]=1.0;
-                    colorarray[cindex++]=0.6;
-                    colorarray[cindex++]=0.6;
-                  }
-                 else
-                 {
-                   colorarray[cindex++]=0.3;
-                   colorarray[cindex++]=0.1;
-                   colorarray[cindex++]=0.1;
-                 }
-              }
-              else
-              {
-                colorarray[cindex++]=0.0;
-                colorarray[cindex++]=0.0;
-                colorarray[cindex++]=0.0;
-              }
-              kindex++;
+                if(labels[kindex]!=0)
+                {
+                   if((labels[kindex-1]==0)||(labels[kindex+1]==0)
+                     ||(labels[kindex+640]==0)||(labels[kindex-640]==0))
+                    {
+                      colorarray[cindex++]=1.0;
+                      colorarray[cindex++]=0.6;
+                      colorarray[cindex++]=0.6;
+                    }
+                   else
+                   {
+                     colorarray[cindex++]=0.3;
+                     colorarray[cindex++]=0.1;
+                     colorarray[cindex++]=0.1;
+                   }
+                }
+                else
+                {
+                  colorarray[cindex++]=0.0;
+                  colorarray[cindex++]=0.0;
+                  colorarray[cindex++]=0.0;
+                }
+                kindex++;
             }
         }
     }
-    mPointCloud->updateVertexColours(640*480, colorarray);
-    mPointCloud->updateVertexPositions(640*480, pointlist);
+    mPointCloud->updateVertexColours(numpoints, colorarray);
+    mPointCloud->updateVertexPositions(numpoints, pointlist);
 }
 
 bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)

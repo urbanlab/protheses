@@ -22,6 +22,7 @@ void Prosthesis::load(Ogre::SceneManager * mgr)
   Ogre::AxisAlignedBox aabb = Ogre::AxisAlignedBox(-10e10, -10e10, -10e10,
                                                     10e10,  10e10,  10e10);
   mEntity->getMesh()->_setBounds(aabb);
+  this->hide();
 }
 
 bool Prosthesis::transformBone(std::string boneName,
