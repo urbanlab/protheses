@@ -123,6 +123,7 @@ MirrorApplication::MirrorApplication()
     mKinectOffsetY = 49;
     mScaleFactor = 1.0;
     mCurrentDisplayed = 0;
+    mHideArm = false;
 }
 
 void MirrorApplication::destroyScene(void)
@@ -162,7 +163,8 @@ void MirrorApplication::createScene()
     mModel->setDisplaySkeleton(false);*/
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
-    mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.5,0.5,0.5));
+    //mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0.5,0.5,0.5));
+    mWindow->getViewport(0)->setBackgroundColour(Ogre::ColourValue(0,0,0));
 
     //AxisAlignedBox aabb = AxisAlignedBox(-10e10, -10e10, -10e10,
     //                                          10e10,  10e10,  10e10);
@@ -351,18 +353,27 @@ void MirrorApplication::updateKinectCloud()
     }*/
 
 
-    XnPoint3D pt;
-    pt = mRightShoulderJoint.position.position;
-    mDepthGenerator.ConvertRealWorldToProjective(1, &pt, &pt);
+    XnPoint3D ptShoulder, ptHip;
+    ptShoulder = mRightShoulderJoint.position.position;
+    ptHip = mRightHipJoint.position.position;
+    mDepthGenerator.ConvertRealWorldToProjective(1, &ptShoulder, &ptShoulder);
+    mDepthGenerator.ConvertRealWorldToProjective(1, &ptHip, &ptHip);
 
     for(int j=0;j<480;j++)
     {
         for(int i=0;i<640;i++)
         {
+          bool visible = true;
+          if((mHideArm)&&(i>ptShoulder.X+10)
+                       &&(j<ptHip.Y+80)
+                       &&(j>ptShoulder.Y-40))
+            visible = false;
+
           unsigned int newIndex = mKinectOffsetX + i*mKinectScaleX +
               640*(int)(mKinectOffsetY + j*mKinectScaleY);
           newIndex = newIndex % (640*480);
-          if((labels[kindex]!=0)&&(i<pt.X))
+
+          if((labels[kindex]!=0)&&(visible))
           {
             colorarray[cindex++]=(videoImage[newIndex].nBlue)/256.0;
             colorarray[cindex++]=(videoImage[newIndex].nGreen)/256.0;
@@ -381,6 +392,42 @@ void MirrorApplication::updateKinectCloud()
             pointlist[vindex++]=0;
           }
           kindex++;
+        }
+    }
+
+    if(mHighlightContour)
+    {
+        for(int j=1;j<479;j++)
+        {
+            kindex = j*640 +1;
+            cindex = kindex*3;
+            for(int i=1;i<639;i++)
+            {
+
+              if(labels[kindex]!=0)
+              {
+                 if((labels[kindex-1]==0)||(labels[kindex+1]==0)
+                   ||(labels[kindex+640]==0)||(labels[kindex-640]==0))
+                  {
+                    colorarray[cindex++]=1.0;
+                    colorarray[cindex++]=0.6;
+                    colorarray[cindex++]=0.6;
+                  }
+                 else
+                 {
+                   colorarray[cindex++]=0.3;
+                   colorarray[cindex++]=0.1;
+                   colorarray[cindex++]=0.1;
+                 }
+              }
+              else
+              {
+                colorarray[cindex++]=0.0;
+                colorarray[cindex++]=0.0;
+                colorarray[cindex++]=0.0;
+              }
+              kindex++;
+            }
         }
     }
     mPointCloud->updateVertexColours(640*480, colorarray);
@@ -446,14 +493,17 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
       for(int i=0;i<mScenario.size();i++)
       {
           mScenario[i].fader->update(dT);
-          if((mScenario[i].type>0)&&
-             (mScenario[i].startTime<dT)&&
+          if((mScenario[i].startTime<dT)&&
              (mScenario[i].startTime+mScenario[0].playDuration
               +mScenario[0].fadeoutDuration+mScenario[0].fadeInDuration>dT))
           {
-              ((Prosthesis*)(mScenario[i].fader))->updateAllJoints(
-                    mTimerSinceDetection.getMilliseconds(),
-                    &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
+              if(mScenario[i].type>0)
+              {
+                ((Prosthesis*)(mScenario[i].fader))->updateAllJoints(
+                      mTimerSinceDetection.getMilliseconds(),
+                      &sc, &mDepthGenerator, aUsers[mCurrentUserXn]);
+              }
+              mHideArm = mScenario[i].hideArm!=0;
           }
       }
 
@@ -488,6 +538,11 @@ bool MirrorApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         v = Ogre::Vector3(xnv.X, -xnv.Y, xnv.Z);
         mKinectNode[3]->setPosition(v);
         //cout << "hand=" << v << endl;
+
+
+        g_UserGenerator.GetSkeletonCap().
+                GetSkeletonJoint(aUsers[mCurrentUserXn],XN_SKEL_RIGHT_HIP,joint);
+        mRightHipJoint = joint;
     }
 
     else
@@ -770,6 +825,8 @@ void MirrorApplication::readScenario(string filename)
     ss >> mKinectOffsetX >> mKinectOffsetY >> mKinectScaleX >> mKinectScaleY;
     int fakebool;
     ss >> fakebool;
+    mHighlightContour = (fakebool!=0);
+    ss >> fakebool;
     mCfgDisplayDebug=(fakebool!=0);
     ss >> fakebool;
     mCfgKeyboardControl=(fakebool!=0);
@@ -780,6 +837,7 @@ void MirrorApplication::readScenario(string filename)
     {
         ss >> se.name;
         ss >> se.type;
+        ss >> se.hideArm;
         ss >> se.pos.x >> se.pos.y >> se.pos.z;
         ss >> se.width >> se.height;
         ss >> se.startTime >> se.fadeInDuration;

@@ -21,6 +21,8 @@ struct ScenarioElement{
     std::string name;
     // type : 0 : infoviz 1-3 : prosthesis of the corresponding type
     int type;
+    // Should the arm be hidden?
+    int hideArm;
     // Used only for infoviz
     Ogre::Vector3 pos;
     float width,height;
@@ -115,8 +117,14 @@ private:
     bool mCfgMouseControl;
     bool mCfgDisplayDebug;
 
-    // Hackity stuff
+    // Keeps the modified shoulder position to remove a part of the point cloud
+    // and replace it with the prosthesis
     XnSkeletonJointTransformation mRightShoulderJoint;
+    XnSkeletonJointTransformation mRightHipJoint;
+    // Indicated if we are in a part of the scenario where an arm should be hidden
+    bool mHideArm;
+
+    bool mHighlightContour;
 
 };
 
