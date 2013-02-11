@@ -6,7 +6,7 @@ void Infoviz::load(Ogre::SceneManager *mgr)
     mRectangle->setCorners(this->x, this->y,
                            this->x+this->width, this->y+this->height);
     mRectangle->setBoundingBox(Ogre::AxisAlignedBox(-100000.0f * Ogre::Vector3::UNIT_SCALE, 100000.0f * Ogre::Vector3::UNIT_SCALE));
-    mRectangle->setMaterial("infoviz_1_material");
+    mRectangle->setMaterial(mFilename);
 
     mNode = mgr->getRootSceneNode()->createChildSceneNode("Infoviz"+mFilename);
     mNode->attachObject(mRectangle);

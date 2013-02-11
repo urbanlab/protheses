@@ -378,7 +378,8 @@ void MirrorApplication::updateKinectCloud()
               640*(int)(mKinectOffsetY + j*mKinectScaleY);
           newIndex = newIndex % (640*480);
 
-          if((labels[kindex]!=0)&&(visible))
+          //if((labels[kindex]!=0)&&(visible))
+          if(true)
           {
             colorarray[cindex++]=(videoImage[newIndex].nBlue)/256.0;
             colorarray[cindex++]=(videoImage[newIndex].nGreen)/256.0;
