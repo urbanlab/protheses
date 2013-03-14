@@ -613,6 +613,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
       return false;
   }
   bool kinectCalibChanged=false;
+  bool anyChange=true;
 
   if (arg.key == OIS::KC_NUMPAD0)
   {
@@ -672,7 +673,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     mCamera->setFOVy(r);*/
     mProsthesis[mCurrentDisplayed]->kinectZCorrection *= 0.95;
   }
-  else if (arg.key == OIS::KC_Z)
+  /*else if (arg.key == OIS::KC_Z)
   {
     Vector3 v = mPointCloudNode->getPosition();
     v.z*=1.05;
@@ -703,7 +704,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     Radian r = mCamera->getFOVy();
     r*=0.95;
     mCamera->setFOVy(r);
-  }
+  }*/
   /*else if (arg.key == OIS::KC_T)
   {
       mProsthesis[mCurrentDisplayed]->dbgYaw += 1;
@@ -728,7 +729,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   {
       mProsthesis[mCurrentDisplayed]->dbgRoll -= 1;
   }*/
-  /*else if (arg.key == OIS::KC_B)
+  else if (arg.key == OIS::KC_B)
   {
       mKinectOffsetY += 1;
       kinectCalibChanged=true;
@@ -768,7 +769,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   {
       mKinectScaleX -=0.01;
       kinectCalibChanged=true;
-  }*/
+  }
 
 
   else if (arg.key == OIS::KC_SPACE)
@@ -777,6 +778,7 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
   }
   else
   {
+    anyChange=false;
     return BaseApplication::keyPressed(arg);
   }
   /*for(int i=0;i<3;i++)
@@ -784,18 +786,20 @@ bool MirrorApplication::keyPressed( const OIS::KeyEvent &arg )
     mProsthesis[i]->hide();
   }
   mProsthesis[mCurrentDisplayed]->show();*/
-  if(kinectCalibChanged)
+  if(anyChange)
   {
-    cout << mKinectOffsetX << "\t";
-    cout << mKinectOffsetY << "\t";
-    cout << mKinectScaleX << "\t";
-    cout << mKinectScaleY << endl;
+    cout << "Kinect calib : ";
+    cout << "OffX: " << mKinectOffsetX << "\t";
+    cout << "OffY: " << mKinectOffsetY << "\t";
+    cout << "ScaleX: " << mKinectScaleX << "\t";
+    cout << "ScaleY: " << mKinectScaleY << endl;
+
+    cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
+    /*cout << "Fov Y = " << Degree(mCamera->getFOVy());
+    cout << "\t Point cloud distance = " << mPointCloudNode->getPosition().z;
+    cout << "\t scale = " << mProsthesis[mCurrentDisplayed]->scaleFactor;
+    cout << "\t kinectZ correction :"<<mProsthesis[mCurrentDisplayed]->kinectZCorrection << endl;*/
   }
-  cout << mProsthesis[mCurrentDisplayed]->dbgT << endl;
-  cout << "Fov Y = " << Degree(mCamera->getFOVy());
-  cout << "\t Point cloud distance = " << mPointCloudNode->getPosition().z;
-  cout << "\t scale = " << mProsthesis[mCurrentDisplayed]->scaleFactor;
-  cout << "\t kinectZ correctioin :"<<mProsthesis[mCurrentDisplayed]->kinectZCorrection << endl;
   return true;
 }
 
